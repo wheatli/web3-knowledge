@@ -39,7 +39,24 @@ primary_sources:
 
 ---
 
-## 2. 时间线完整档案（55 events）
+## 2. 目录结构（按事件类型分类）
+
+事件档案按**主攻击面**归类为 8 个子目录，每个子目录下文件按 `YYYY-event-slug.md` 命名。一起事件通常可归入多类（例如 Ronin 同时 Bridge+Multisig+Social-Eng），此处按**主因**单目录归档；跨类索引见下文 §2.1 时间线表格与 §7 学习主题。
+
+| 子目录 | 含义 | 数量 | 典型事件 |
+|--------|------|------|---------|
+| [`cex-custodian/`](./cex-custodian/) | 中心化交易所 / 托管商（热钱包被盗、Multisig 阈值被破、内鬼） | 17 | Mt.Gox、Coincheck、FTX、DMM、**Bybit $1.46B** |
+| [`bridge/`](./bridge/) | 跨链桥（签名验证、初始化、多签密钥、IAVL proof） | 9 | Ronin、Wormhole、Nomad、BNB Bridge、Poly |
+| [`defi-protocol/`](./defi-protocol/) | DeFi 协议自身逻辑/重入/编译器/流动性数学 bug | 10 | The DAO、Euler、Curve Vyper、Cetus、Penpie |
+| [`oracle-mev/`](./oracle-mev/) | 预言机闪贷操纵 / 永续合约价格 oracle | 7 | bZx、Harvest、Cream、Mango、Hyperliquid JELLY |
+| [`wallet-key/`](./wallet-key/) | 钱包 / 密钥管理 / 签名库漏洞（非 CEX 场景） | 5 | Parity Multisig、Parity Freeze、Wintermute、Atomic |
+| [`governance-admin/`](./governance-admin/) | 治理闪贷 / Admin 权限 / Mint 特权滥用 | 3 | Beanstalk、PlayDapp、Gala Games |
+| [`supply-chain-phish/`](./supply-chain-phish/) | 前端劫持 / CDN / npm / LinkedIn 假面试 / 内鬼开发 | 6 | BadgerDAO、Ledger Connect Kit、Munchables、Radiant |
+| [`misc/`](./misc/) | 代币坍塌 / 年度聚合 / 暂不明类别 | 2 | Mantra OM、2026 YTD |
+
+---
+
+## 2.1 时间线完整档案（55 events）
 
 > Tier 分档：**T1** = 单笔损失 ≥ $100M 或行业级影响；**T2** = $10M–$100M 或机制新颖；**T3** = < $10M 但具代表性（新型攻击载体）。金额按事发当日 USD 计。
 
@@ -47,90 +64,90 @@ primary_sources:
 
 | 年份 | 事件 | 损失 (USD) | 类别 | Tier | 档案 |
 |------|------|-----------|------|------|------|
-| 2011 | Mt.Gox First Breach | ~$8.75M | CEX / Key-Mgmt | T3 | [2011-mtgox-first-breach](./2011-mtgox-first-breach.md) |
-| 2012 | Linode / Bitcoinica | ~$230k | Supply-Chain | T3 | [2012-linode-bitcoinica](./2012-linode-bitcoinica.md) |
-| 2014 | Mt.Gox Collapse | 850k BTC (~$460M 当时) | CEX / Key-Mgmt | T1 | [2014-mtgox-collapse](./2014-mtgox-collapse.md) |
-| 2015 | Bitstamp | ~$5M | CEX / Social-Eng | T3 | [2015-bitstamp](./2015-bitstamp.md) |
-| 2016 | The DAO | ~$60M (3.6M ETH) | DeFi / 逻辑 | T1 | [2016-the-dao](./2016-the-dao.md) |
-| 2016 | Bitfinex | ~$72M (120k BTC) | CEX / Multisig | T2 | [2016-bitfinex](./2016-bitfinex.md) |
-| 2017 | Parity Multisig Hack | ~$30M (150k ETH) | Wallet | T2 | [2017-parity-wallet-hack](./2017-parity-wallet-hack.md) |
-| 2017 | Parity Freeze (accidental) | 513k ETH 永久冻结 | Wallet / 逻辑 | T1 | [2017-parity-freeze](./2017-parity-freeze.md) |
-| 2017 | CoinDash ICO DNS Hijack | ~$7M | Social-Eng | T3 | [2017-coindash-ico-dns](./2017-coindash-ico-dns.md) |
-| 2018 | Coincheck NEM | ~$534M | CEX / Key-Mgmt | T1 | [2018-coincheck-nem](./2018-coincheck-nem.md) |
-| 2018 | BitGrail (NANO) | ~$170M | CEX | T3 | [2018-bitgrail](./2018-bitgrail.md) |
-| 2019 | Binance 7k BTC | ~$40M | CEX / Social-Eng | T2 | [2019-binance-7k-btc](./2019-binance-7k-btc.md) |
-| 2019 | Upbit | ~$49M | CEX | T2 | [2019-upbit](./2019-upbit.md) |
+| 2011 | Mt.Gox First Breach | ~$8.75M | CEX / Key-Mgmt | T3 | [2011-mtgox-first-breach](./cex-custodian/2011-mtgox-first-breach.md) |
+| 2012 | Linode / Bitcoinica | ~$230k | Supply-Chain | T3 | [2012-linode-bitcoinica](./supply-chain-phish/2012-linode-bitcoinica.md) |
+| 2014 | Mt.Gox Collapse | 850k BTC (~$460M 当时) | CEX / Key-Mgmt | T1 | [2014-mtgox-collapse](./cex-custodian/2014-mtgox-collapse.md) |
+| 2015 | Bitstamp | ~$5M | CEX / Social-Eng | T3 | [2015-bitstamp](./cex-custodian/2015-bitstamp.md) |
+| 2016 | The DAO | ~$60M (3.6M ETH) | DeFi / 逻辑 | T1 | [2016-the-dao](./defi-protocol/2016-the-dao.md) |
+| 2016 | Bitfinex | ~$72M (120k BTC) | CEX / Multisig | T2 | [2016-bitfinex](./cex-custodian/2016-bitfinex.md) |
+| 2017 | Parity Multisig Hack | ~$30M (150k ETH) | Wallet | T2 | [2017-parity-wallet-hack](./wallet-key/2017-parity-wallet-hack.md) |
+| 2017 | Parity Freeze (accidental) | 513k ETH 永久冻结 | Wallet / 逻辑 | T1 | [2017-parity-freeze](./wallet-key/2017-parity-freeze.md) |
+| 2017 | CoinDash ICO DNS Hijack | ~$7M | Social-Eng | T3 | [2017-coindash-ico-dns](./supply-chain-phish/2017-coindash-ico-dns.md) |
+| 2018 | Coincheck NEM | ~$534M | CEX / Key-Mgmt | T1 | [2018-coincheck-nem](./cex-custodian/2018-coincheck-nem.md) |
+| 2018 | BitGrail (NANO) | ~$170M | CEX | T3 | [2018-bitgrail](./cex-custodian/2018-bitgrail.md) |
+| 2019 | Binance 7k BTC | ~$40M | CEX / Social-Eng | T2 | [2019-binance-7k-btc](./cex-custodian/2019-binance-7k-btc.md) |
+| 2019 | Upbit | ~$49M | CEX | T2 | [2019-upbit](./cex-custodian/2019-upbit.md) |
 
 ### 2020–2021（10 events）
 
 | 年份 | 事件 | 损失 | 类别 | Tier | 档案 |
 |------|------|-----------|------|------|------|
-| 2020 | LendfMe Reentrancy | $25M | DeFi / 重入 | T2 | [2020-lendfme-reentrancy](./2020-lendfme-reentrancy.md) |
-| 2020 | bZx Flashloan Series | $8M+$8M+$55M | DeFi / Oracle | T2 | [2020-bzx-flashloan-series](./2020-bzx-flashloan-series.md) |
-| 2020 | Harvest Finance | $24M | DeFi / Oracle | T2 | [2020-harvest-finance](./2020-harvest-finance.md) |
-| 2020 | KuCoin | ~$281M | CEX / Key-Mgmt | T1 | [2020-kucoin](./2020-kucoin.md) |
-| 2021 | Poly Network | $611M | Bridge / 权限 | T1 | [2021-polynetwork](./2021-polynetwork.md) |
-| 2021 | BadgerDAO | $120M | Supply-Chain / 前端 | T1 | [2021-badgerdao](./2021-badgerdao.md) |
-| 2021 | Cream Finance | $130M | DeFi / Oracle | T1 | [2021-cream-finance](./2021-cream-finance.md) |
-| 2021 | PancakeBunny | $45M | DeFi / Oracle | T2 | [2021-pancakebunny](./2021-pancakebunny.md) |
-| 2021 | BitMart | $196M | CEX / Key-Mgmt | T2 | [2021-bitmart](./2021-bitmart.md) |
-| 2021 | Vulcan Forged | $140M (大部分追回) | GameFi / Key-Mgmt | T3 | [2021-vulcan-forged](./2021-vulcan-forged.md) |
+| 2020 | LendfMe Reentrancy | $25M | DeFi / 重入 | T2 | [2020-lendfme-reentrancy](./defi-protocol/2020-lendfme-reentrancy.md) |
+| 2020 | bZx Flashloan Series | $8M+$8M+$55M | DeFi / Oracle | T2 | [2020-bzx-flashloan-series](./oracle-mev/2020-bzx-flashloan-series.md) |
+| 2020 | Harvest Finance | $24M | DeFi / Oracle | T2 | [2020-harvest-finance](./oracle-mev/2020-harvest-finance.md) |
+| 2020 | KuCoin | ~$281M | CEX / Key-Mgmt | T1 | [2020-kucoin](./cex-custodian/2020-kucoin.md) |
+| 2021 | Poly Network | $611M | Bridge / 权限 | T1 | [2021-polynetwork](./bridge/2021-polynetwork.md) |
+| 2021 | BadgerDAO | $120M | Supply-Chain / 前端 | T1 | [2021-badgerdao](./supply-chain-phish/2021-badgerdao.md) |
+| 2021 | Cream Finance | $130M | DeFi / Oracle | T1 | [2021-cream-finance](./oracle-mev/2021-cream-finance.md) |
+| 2021 | PancakeBunny | $45M | DeFi / Oracle | T2 | [2021-pancakebunny](./oracle-mev/2021-pancakebunny.md) |
+| 2021 | BitMart | $196M | CEX / Key-Mgmt | T2 | [2021-bitmart](./cex-custodian/2021-bitmart.md) |
+| 2021 | Vulcan Forged | $140M (大部分追回) | GameFi / Key-Mgmt | T3 | [2021-vulcan-forged](./wallet-key/2021-vulcan-forged.md) |
 
 ### 2022（9 events）
 
 | 年份 | 事件 | 损失 | 类别 | Tier | 档案 |
 |------|------|-----------|------|------|------|
-| 2022 | Ronin Bridge | $625M | Bridge / Multisig | T1 | [2022-ronin](./2022-ronin.md) |
-| 2022 | Wormhole | $325M | Bridge / 签名验证 | T1 | [2022-wormhole](./2022-wormhole.md) |
-| 2022 | Nomad | $190M | Bridge / 初始化 | T1 | [2022-nomad](./2022-nomad.md) |
-| 2022 | Beanstalk Governance | $182M | Governance / Timelock | T1 | [2022-beanstalk-governance](./2022-beanstalk-governance.md) |
-| 2022 | Harmony Horizon | $100M | Bridge / Multisig | T2 | [2022-harmony-horizon](./2022-harmony-horizon.md) |
-| 2022 | Mango Markets | $117M | DeFi / Oracle | T2 | [2022-mango-markets](./2022-mango-markets.md) |
-| 2022 | BNB Chain Bridge | $570M (冻结 $430M) | Bridge / IAVL proof | T1 | [2022-bnb-chain-bridge](./2022-bnb-chain-bridge.md) |
-| 2022 | FTX Collapse | ~$477M (被黑) / $8B+ 总盘 | CEX / 欺诈+被黑 | T1 | [2022-ftx-collapse](./2022-ftx-collapse.md) |
-| 2022 | Wintermute | $160M | Wallet / Profanity vanity | T2 | [2022-wintermute](./2022-wintermute.md) |
+| 2022 | Ronin Bridge | $625M | Bridge / Multisig | T1 | [2022-ronin](./bridge/2022-ronin.md) |
+| 2022 | Wormhole | $325M | Bridge / 签名验证 | T1 | [2022-wormhole](./bridge/2022-wormhole.md) |
+| 2022 | Nomad | $190M | Bridge / 初始化 | T1 | [2022-nomad](./bridge/2022-nomad.md) |
+| 2022 | Beanstalk Governance | $182M | Governance / Timelock | T1 | [2022-beanstalk-governance](./governance-admin/2022-beanstalk-governance.md) |
+| 2022 | Harmony Horizon | $100M | Bridge / Multisig | T2 | [2022-harmony-horizon](./bridge/2022-harmony-horizon.md) |
+| 2022 | Mango Markets | $117M | DeFi / Oracle | T2 | [2022-mango-markets](./oracle-mev/2022-mango-markets.md) |
+| 2022 | BNB Chain Bridge | $570M (冻结 $430M) | Bridge / IAVL proof | T1 | [2022-bnb-chain-bridge](./bridge/2022-bnb-chain-bridge.md) |
+| 2022 | FTX Collapse | ~$477M (被黑) / $8B+ 总盘 | CEX / 欺诈+被黑 | T1 | [2022-ftx-collapse](./cex-custodian/2022-ftx-collapse.md) |
+| 2022 | Wintermute | $160M | Wallet / Profanity vanity | T2 | [2022-wintermute](./wallet-key/2022-wintermute.md) |
 
 ### 2023（8 events）
 
 | 年份 | 事件 | 损失 | 类别 | Tier | 档案 |
 |------|------|-----------|------|------|------|
-| 2023 | Euler Finance | $197M (已归还) | DeFi / 逻辑 | T1 | [2023-euler](./2023-euler.md) |
-| 2023 | Multichain | ~$126M | Bridge / Key-Mgmt | T1 | [2023-multichain](./2023-multichain.md) |
-| 2023 | Mixin Network | $200M | CEX-like / 云DB | T1 | [2023-mixin](./2023-mixin.md) |
-| 2023 | Curve Vyper Reentrancy | $73M (大部分追回) | DeFi / 编译器 | T1 | [2023-curve-vyper-reentrancy](./2023-curve-vyper-reentrancy.md) |
-| 2023 | Atomic Wallet | $100M | Wallet / 未知 vector | T2 | [2023-atomic-wallet](./2023-atomic-wallet.md) |
-| 2023 | Poloniex | $125M | CEX / Key-Mgmt | T2 | [2023-poloniex](./2023-poloniex.md) |
-| 2023 | Ledger Connect Kit | ~$600k | Supply-Chain / CDN | T2 | [2023-ledger-connect-kit](./2023-ledger-connect-kit.md) |
-| 2023 | HECO Bridge | $86M | Bridge / Key-Mgmt | T3 | [2023-heco-bridge](./2023-heco-bridge.md) |
+| 2023 | Euler Finance | $197M (已归还) | DeFi / 逻辑 | T1 | [2023-euler](./defi-protocol/2023-euler.md) |
+| 2023 | Multichain | ~$126M | Bridge / Key-Mgmt | T1 | [2023-multichain](./bridge/2023-multichain.md) |
+| 2023 | Mixin Network | $200M | CEX-like / 云DB | T1 | [2023-mixin](./cex-custodian/2023-mixin.md) |
+| 2023 | Curve Vyper Reentrancy | $73M (大部分追回) | DeFi / 编译器 | T1 | [2023-curve-vyper-reentrancy](./defi-protocol/2023-curve-vyper-reentrancy.md) |
+| 2023 | Atomic Wallet | $100M | Wallet / 未知 vector | T2 | [2023-atomic-wallet](./wallet-key/2023-atomic-wallet.md) |
+| 2023 | Poloniex | $125M | CEX / Key-Mgmt | T2 | [2023-poloniex](./cex-custodian/2023-poloniex.md) |
+| 2023 | Ledger Connect Kit | ~$600k | Supply-Chain / CDN | T2 | [2023-ledger-connect-kit](./supply-chain-phish/2023-ledger-connect-kit.md) |
+| 2023 | HECO Bridge | $86M | Bridge / Key-Mgmt | T3 | [2023-heco-bridge](./bridge/2023-heco-bridge.md) |
 
 ### 2024（8 events）
 
 | 年份 | 事件 | 损失 | 类别 | Tier | 档案 |
 |------|------|-----------|------|------|------|
-| 2024 | PlayDapp | $290M | Game / 权限 | T1 | [2024-playdapp](./2024-playdapp.md) |
-| 2024 | DMM Bitcoin | $305M | CEX / Key-Mgmt | T1 | [2024-dmm-bitcoin](./2024-dmm-bitcoin.md) |
-| 2024 | WazirX | $234M | CEX / 前端+Multisig | T1 | [2024-wazirx](./2024-wazirx.md) |
-| 2024 | Radiant Capital | $58M | DeFi / Multisig 前端 | T2 | [2024-radiant-capital](./2024-radiant-capital.md) |
-| 2024 | Orbit Chain | $82M | Bridge / Key-Mgmt | T2 | [2024-orbit-chain](./2024-orbit-chain.md) |
-| 2024 | Munchables | $62M (全额归还) | Supply-Chain / 内鬼 | T3 | [2024-munchables](./2024-munchables.md) |
-| 2024 | Penpie Reentrancy | $27M | DeFi / 重入 | T3 | [2024-penpie-reentrancy](./2024-penpie-reentrancy.md) |
-| 2024 | Gala Games Mint | $21M (追回) | Game / 权限 | T2 | [2024-gala-games-mint](./2024-gala-games-mint.md) |
+| 2024 | PlayDapp | $290M | Game / 权限 | T1 | [2024-playdapp](./governance-admin/2024-playdapp.md) |
+| 2024 | DMM Bitcoin | $305M | CEX / Key-Mgmt | T1 | [2024-dmm-bitcoin](./cex-custodian/2024-dmm-bitcoin.md) |
+| 2024 | WazirX | $234M | CEX / 前端+Multisig | T1 | [2024-wazirx](./cex-custodian/2024-wazirx.md) |
+| 2024 | Radiant Capital | $58M | DeFi / Multisig 前端 | T2 | [2024-radiant-capital](./supply-chain-phish/2024-radiant-capital.md) |
+| 2024 | Orbit Chain | $82M | Bridge / Key-Mgmt | T2 | [2024-orbit-chain](./bridge/2024-orbit-chain.md) |
+| 2024 | Munchables | $62M (全额归还) | Supply-Chain / 内鬼 | T3 | [2024-munchables](./supply-chain-phish/2024-munchables.md) |
+| 2024 | Penpie Reentrancy | $27M | DeFi / 重入 | T3 | [2024-penpie-reentrancy](./defi-protocol/2024-penpie-reentrancy.md) |
+| 2024 | Gala Games Mint | $21M (追回) | Game / 权限 | T2 | [2024-gala-games-mint](./governance-admin/2024-gala-games-mint.md) |
 
 ### 2025–2026（11 events）
 
 | 年份 | 事件 | 损失 | 类别 | Tier | 档案 |
 |------|------|-----------|------|------|------|
-| 2025 | Bybit (史上最大) | **$1.46B** | CEX / UI 钓鱼 + Multisig | T1 | [2025-bybit](./2025-bybit.md) |
-| 2025 | Abracadabra / Magic Internet Money | $13M | DeFi | T3 | [2025-abracadabra](./2025-abracadabra.md) |
-| 2025 | Infini | $50M | DeFi/Stablecoin | T3 | [2025-infini](./2025-infini.md) |
-| 2025 | zkLend | $9.6M | DeFi | T3 | [2025-zklend](./2025-zklend.md) |
-| 2025 | Cetus (Sui) | $223M | DeFi / 流动性数学 | T1 | [2025-cetus-sui](./2025-cetus-sui.md) |
-| 2025 | Mantra OM Collapse | ~$6B 市值蒸发 | Token / 流动性 | T2 | [2025-mantra-om-collapse](./2025-mantra-om-collapse.md) |
-| 2025 | Hyperliquid JELLY | ~$12M HLP 损失 | Perp / Oracle | T2 | [2025-hyperliquid-jelly](./2025-hyperliquid-jelly.md) |
-| 2025 | Phemex | $85M | CEX / Key-Mgmt | T2 | [2025-phemex](./2025-phemex.md) |
-| 2025 | Four.meme | ~$3M | DeFi / Launchpad | T3 | [2025-four-meme](./2025-four-meme.md) |
-| 2025 | KiloEx | ~$7M | DeFi / Perp Oracle | T3 | [2025-kiloex](./2025-kiloex.md) |
-| 2026 | YTD Notable Incidents (Q1–Q2) | 聚合 | 多类 | N/A | [2026-ytd-notable-incidents](./2026-ytd-notable-incidents.md) |
+| 2025 | Bybit (史上最大) | **$1.46B** | CEX / UI 钓鱼 + Multisig | T1 | [2025-bybit](./cex-custodian/2025-bybit.md) |
+| 2025 | Abracadabra / Magic Internet Money | $13M | DeFi | T3 | [2025-abracadabra](./defi-protocol/2025-abracadabra.md) |
+| 2025 | Infini | $50M | DeFi/Stablecoin | T3 | [2025-infini](./defi-protocol/2025-infini.md) |
+| 2025 | zkLend | $9.6M | DeFi | T3 | [2025-zklend](./defi-protocol/2025-zklend.md) |
+| 2025 | Cetus (Sui) | $223M | DeFi / 流动性数学 | T1 | [2025-cetus-sui](./defi-protocol/2025-cetus-sui.md) |
+| 2025 | Mantra OM Collapse | ~$6B 市值蒸发 | Token / 流动性 | T2 | [2025-mantra-om-collapse](./misc/2025-mantra-om-collapse.md) |
+| 2025 | Hyperliquid JELLY | ~$12M HLP 损失 | Perp / Oracle | T2 | [2025-hyperliquid-jelly](./oracle-mev/2025-hyperliquid-jelly.md) |
+| 2025 | Phemex | $85M | CEX / Key-Mgmt | T2 | [2025-phemex](./cex-custodian/2025-phemex.md) |
+| 2025 | Four.meme | ~$3M | DeFi / Launchpad | T3 | [2025-four-meme](./defi-protocol/2025-four-meme.md) |
+| 2025 | KiloEx | ~$7M | DeFi / Perp Oracle | T3 | [2025-kiloex](./oracle-mev/2025-kiloex.md) |
+| 2026 | YTD Notable Incidents (Q1–Q2) | 聚合 | 多类 | N/A | [2026-ytd-notable-incidents](./misc/2026-ytd-notable-incidents.md) |
 
 ---
 

@@ -443,72 +443,72 @@
 - [x] DRAFT — `08-security-incidents/_index.md` — P0（2026-04-23, ~15.3k chars）
 
 ### 2011–2019（13 篇）
-- [x] DRAFT — `08-security-incidents/2011-mtgox-first-breach.md` — T3
-- [x] DRAFT — `08-security-incidents/2012-linode-bitcoinica.md` — T3
-- [x] DRAFT — `08-security-incidents/2014-mtgox-collapse.md` — T1
-- [x] DRAFT — `08-security-incidents/2015-bitstamp.md` — T3
-- [x] DRAFT — `08-security-incidents/2016-the-dao.md` — T1
-- [x] DRAFT — `08-security-incidents/2016-bitfinex.md` — T2
-- [x] DRAFT — `08-security-incidents/2017-parity-wallet-hack.md` — T2
-- [x] DRAFT — `08-security-incidents/2017-parity-freeze.md` — T1
-- [x] DRAFT — `08-security-incidents/2017-coindash-ico-dns.md` — T3
-- [x] DRAFT — `08-security-incidents/2018-coincheck-nem.md` — T1
-- [x] DRAFT — `08-security-incidents/2018-bitgrail.md` — T3
-- [x] DRAFT — `08-security-incidents/2019-binance-7k-btc.md` — T2
-- [x] DRAFT — `08-security-incidents/2019-upbit.md` — T2
+- [x] DRAFT — `08-security-incidents/cex-custodian/2011-mtgox-first-breach.md` — T3
+- [x] DRAFT — `08-security-incidents/supply-chain-phish/2012-linode-bitcoinica.md` — T3
+- [x] DRAFT — `08-security-incidents/cex-custodian/2014-mtgox-collapse.md` — T1
+- [x] DRAFT — `08-security-incidents/cex-custodian/2015-bitstamp.md` — T3
+- [x] DRAFT — `08-security-incidents/defi-protocol/2016-the-dao.md` — T1
+- [x] DRAFT — `08-security-incidents/cex-custodian/2016-bitfinex.md` — T2
+- [x] DRAFT — `08-security-incidents/wallet-key/2017-parity-wallet-hack.md` — T2
+- [x] DRAFT — `08-security-incidents/wallet-key/2017-parity-freeze.md` — T1
+- [x] DRAFT — `08-security-incidents/supply-chain-phish/2017-coindash-ico-dns.md` — T3
+- [x] DRAFT — `08-security-incidents/cex-custodian/2018-coincheck-nem.md` — T1
+- [x] DRAFT — `08-security-incidents/cex-custodian/2018-bitgrail.md` — T3
+- [x] DRAFT — `08-security-incidents/cex-custodian/2019-binance-7k-btc.md` — T2
+- [x] DRAFT — `08-security-incidents/cex-custodian/2019-upbit.md` — T2
 
 ### 2020–2021（10 篇）
-- [x] DRAFT — `08-security-incidents/2020-lendfme-reentrancy.md` — T2
-- [x] DRAFT — `08-security-incidents/2020-bzx-flashloan-series.md` — T2
-- [x] DRAFT — `08-security-incidents/2020-harvest-finance.md` — T2
-- [x] DRAFT — `08-security-incidents/2020-kucoin.md` — T1
-- [x] DRAFT — `08-security-incidents/2021-polynetwork.md` — T1
-- [x] DRAFT — `08-security-incidents/2021-badgerdao.md` — T1
-- [x] DRAFT — `08-security-incidents/2021-cream-finance.md` — T1
-- [x] DRAFT — `08-security-incidents/2021-pancakebunny.md` — T2
-- [x] DRAFT — `08-security-incidents/2021-bitmart.md` — T2
-- [x] DRAFT — `08-security-incidents/2021-vulcan-forged.md` — T3
+- [x] DRAFT — `08-security-incidents/defi-protocol/2020-lendfme-reentrancy.md` — T2
+- [x] DRAFT — `08-security-incidents/oracle-mev/2020-bzx-flashloan-series.md` — T2
+- [x] DRAFT — `08-security-incidents/oracle-mev/2020-harvest-finance.md` — T2
+- [x] DRAFT — `08-security-incidents/cex-custodian/2020-kucoin.md` — T1
+- [x] DRAFT — `08-security-incidents/bridge/2021-polynetwork.md` — T1
+- [x] DRAFT — `08-security-incidents/supply-chain-phish/2021-badgerdao.md` — T1
+- [x] DRAFT — `08-security-incidents/oracle-mev/2021-cream-finance.md` — T1
+- [x] DRAFT — `08-security-incidents/oracle-mev/2021-pancakebunny.md` — T2
+- [x] DRAFT — `08-security-incidents/cex-custodian/2021-bitmart.md` — T2
+- [x] DRAFT — `08-security-incidents/wallet-key/2021-vulcan-forged.md` — T3
 
 ### 2022（9 篇）
-- [x] DRAFT — `08-security-incidents/2022-ronin.md` — T1
-- [x] DRAFT — `08-security-incidents/2022-wormhole.md` — T1
-- [x] DRAFT — `08-security-incidents/2022-nomad.md` — T1
-- [x] DRAFT — `08-security-incidents/2022-beanstalk-governance.md` — T1
-- [x] DRAFT — `08-security-incidents/2022-harmony-horizon.md` — T2
-- [x] DRAFT — `08-security-incidents/2022-mango-markets.md` — T2
-- [x] DRAFT — `08-security-incidents/2022-bnb-chain-bridge.md` — T1
-- [x] DRAFT — `08-security-incidents/2022-ftx-collapse.md` — T1
-- [x] DRAFT — `08-security-incidents/2022-wintermute.md` — T2
+- [x] DRAFT — `08-security-incidents/bridge/2022-ronin.md` — T1
+- [x] DRAFT — `08-security-incidents/bridge/2022-wormhole.md` — T1
+- [x] DRAFT — `08-security-incidents/bridge/2022-nomad.md` — T1
+- [x] DRAFT — `08-security-incidents/governance-admin/2022-beanstalk-governance.md` — T1
+- [x] DRAFT — `08-security-incidents/bridge/2022-harmony-horizon.md` — T2
+- [x] DRAFT — `08-security-incidents/oracle-mev/2022-mango-markets.md` — T2
+- [x] DRAFT — `08-security-incidents/bridge/2022-bnb-chain-bridge.md` — T1
+- [x] DRAFT — `08-security-incidents/cex-custodian/2022-ftx-collapse.md` — T1
+- [x] DRAFT — `08-security-incidents/wallet-key/2022-wintermute.md` — T2
 
 ### 2023（8 篇）
-- [x] DRAFT — `08-security-incidents/2023-euler.md` — T1
-- [x] DRAFT — `08-security-incidents/2023-multichain.md` — T1
-- [x] DRAFT — `08-security-incidents/2023-mixin.md` — T1
-- [x] DRAFT — `08-security-incidents/2023-curve-vyper-reentrancy.md` — T1
-- [x] DRAFT — `08-security-incidents/2023-atomic-wallet.md` — T2
-- [x] DRAFT — `08-security-incidents/2023-poloniex.md` — T2
-- [x] DRAFT — `08-security-incidents/2023-ledger-connect-kit.md` — T2
-- [x] DRAFT — `08-security-incidents/2023-heco-bridge.md` — T3
+- [x] DRAFT — `08-security-incidents/defi-protocol/2023-euler.md` — T1
+- [x] DRAFT — `08-security-incidents/bridge/2023-multichain.md` — T1
+- [x] DRAFT — `08-security-incidents/cex-custodian/2023-mixin.md` — T1
+- [x] DRAFT — `08-security-incidents/defi-protocol/2023-curve-vyper-reentrancy.md` — T1
+- [x] DRAFT — `08-security-incidents/wallet-key/2023-atomic-wallet.md` — T2
+- [x] DRAFT — `08-security-incidents/cex-custodian/2023-poloniex.md` — T2
+- [x] DRAFT — `08-security-incidents/supply-chain-phish/2023-ledger-connect-kit.md` — T2
+- [x] DRAFT — `08-security-incidents/bridge/2023-heco-bridge.md` — T3
 
 ### 2024（8 篇）
-- [x] DRAFT — `08-security-incidents/2024-playdapp.md` — T1
-- [x] DRAFT — `08-security-incidents/2024-dmm-bitcoin.md` — T1
-- [x] DRAFT — `08-security-incidents/2024-wazirx.md` — T1
-- [x] DRAFT — `08-security-incidents/2024-radiant-capital.md` — T2
-- [x] DRAFT — `08-security-incidents/2024-orbit-chain.md` — T2
-- [x] DRAFT — `08-security-incidents/2024-munchables.md` — T3
-- [x] DRAFT — `08-security-incidents/2024-penpie-reentrancy.md` — T3
-- [x] DRAFT — `08-security-incidents/2024-gala-games-mint.md` — T2
+- [x] DRAFT — `08-security-incidents/governance-admin/2024-playdapp.md` — T1
+- [x] DRAFT — `08-security-incidents/cex-custodian/2024-dmm-bitcoin.md` — T1
+- [x] DRAFT — `08-security-incidents/cex-custodian/2024-wazirx.md` — T1
+- [x] DRAFT — `08-security-incidents/supply-chain-phish/2024-radiant-capital.md` — T2
+- [x] DRAFT — `08-security-incidents/bridge/2024-orbit-chain.md` — T2
+- [x] DRAFT — `08-security-incidents/supply-chain-phish/2024-munchables.md` — T3
+- [x] DRAFT — `08-security-incidents/defi-protocol/2024-penpie-reentrancy.md` — T3
+- [x] DRAFT — `08-security-incidents/governance-admin/2024-gala-games-mint.md` — T2
 
 ### 2025–2026（11 篇）
-- [x] DRAFT — `08-security-incidents/2025-bybit.md` — T1
-- [x] DRAFT — `08-security-incidents/2025-abracadabra.md` — T3
-- [x] DRAFT — `08-security-incidents/2025-infini.md` — T3
-- [x] DRAFT — `08-security-incidents/2025-zklend.md` — T3
-- [x] DRAFT — `08-security-incidents/2025-cetus-sui.md` — T1
-- [x] DRAFT — `08-security-incidents/2025-mantra-om-collapse.md` — T2
-- [x] DRAFT — `08-security-incidents/2025-hyperliquid-jelly.md` — T2
-- [x] DRAFT — `08-security-incidents/2025-phemex.md` — T2
-- [x] DRAFT — `08-security-incidents/2025-four-meme.md` — T3
-- [x] DRAFT — `08-security-incidents/2025-kiloex.md` — T3
-- [x] DRAFT — `08-security-incidents/2026-ytd-notable-incidents.md` — N/A
+- [x] DRAFT — `08-security-incidents/cex-custodian/2025-bybit.md` — T1
+- [x] DRAFT — `08-security-incidents/defi-protocol/2025-abracadabra.md` — T3
+- [x] DRAFT — `08-security-incidents/defi-protocol/2025-infini.md` — T3
+- [x] DRAFT — `08-security-incidents/defi-protocol/2025-zklend.md` — T3
+- [x] DRAFT — `08-security-incidents/defi-protocol/2025-cetus-sui.md` — T1
+- [x] DRAFT — `08-security-incidents/misc/2025-mantra-om-collapse.md` — T2
+- [x] DRAFT — `08-security-incidents/oracle-mev/2025-hyperliquid-jelly.md` — T2
+- [x] DRAFT — `08-security-incidents/cex-custodian/2025-phemex.md` — T2
+- [x] DRAFT — `08-security-incidents/defi-protocol/2025-four-meme.md` — T3
+- [x] DRAFT — `08-security-incidents/oracle-mev/2025-kiloex.md` — T3
+- [x] DRAFT — `08-security-incidents/misc/2026-ytd-notable-incidents.md` — N/A
