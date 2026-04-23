@@ -3,21 +3,21 @@
 本看板按模块列出所有知识点当前状态。状态语义见 `CONTRIBUTING.md`。
 统计口径：TODO 未动 | DRAFT 已成文 ≥ 80% | REVIEWED 已校验 | DONE 全链接/代码可验证。
 
-**最后更新**：2026-04-22
+**最后更新**：2026-04-23
 
 ---
 
 ## 00. 全景与历史
 
-- [ ] TODO — `00-overview/web3-landscape.md` — P1
-- [ ] TODO — `00-overview/blockchain-history.md` — P1
-- [ ] TODO — `00-overview/glossary.md` — P0（持续更新）
+- [x] DRAFT — `00-overview/web3-landscape.md` — P1
+- [x] DRAFT — `00-overview/blockchain-history.md` — P1
+- [x] DRAFT — `00-overview/glossary.md` — P0（持续更新）
 
 ## 01. 基础设施
 
 ### 公链
 
-- [ ] DRAFT — `01-infrastructure/public-chains/_index.md` — P0
+- [x] DRAFT — `01-infrastructure/public-chains/_index.md` — P0
 - [x] **DRAFT** — `01-infrastructure/public-chains/bitcoin.md` — P0 ⭐ 示范文
 - [x] **DRAFT** — `01-infrastructure/public-chains/ethereum.md` — P0 ⭐ 示范文
 - [x] **DRAFT** — `01-infrastructure/public-chains/solana.md` — P0 ⭐ 示范文
@@ -46,9 +46,9 @@
 
 ### 记账模型
 
-- [ ] TODO — `01-infrastructure/ledger-model/utxo.md` — P0
-- [ ] TODO — `01-infrastructure/ledger-model/account.md` — P0
-- [ ] TODO — `01-infrastructure/ledger-model/hybrid-models.md` — P1
+- [x] DRAFT — `01-infrastructure/ledger-model/utxo.md` — P0
+- [x] DRAFT — `01-infrastructure/ledger-model/account.md` — P0
+- [x] DRAFT — `01-infrastructure/ledger-model/hybrid-models.md` — P1
 
 ### 跨链
 
@@ -76,13 +76,13 @@
 
 ### Layer2 与 DA
 
-- [ ] TODO — `01-infrastructure/layer2/_index.md` — P0
-- [ ] TODO — `01-infrastructure/layer2/optimistic-rollup.md` — P0
-- [ ] TODO — `01-infrastructure/layer2/zk-rollup.md` — P0
-- [ ] TODO — `01-infrastructure/layer2/arbitrum.md` — P0
-- [ ] TODO — `01-infrastructure/layer2/optimism.md` — P0
-- [ ] TODO — `01-infrastructure/layer2/base.md` — P1
-- [ ] TODO — `01-infrastructure/layer2/zksync.md` — P1
+- [x] DRAFT — `01-infrastructure/layer2/_index.md` — P0
+- [x] DRAFT — `01-infrastructure/layer2/optimistic-rollup.md` — P0
+- [x] DRAFT — `01-infrastructure/layer2/zk-rollup.md` — P0
+- [x] DRAFT — `01-infrastructure/layer2/arbitrum.md` — P0
+- [x] DRAFT — `01-infrastructure/layer2/optimism.md` — P0
+- [x] DRAFT — `01-infrastructure/layer2/base.md` — P1
+- [x] DRAFT — `01-infrastructure/layer2/zksync.md` — P1
 - [x] **DRAFT** — `01-infrastructure/layer2/starknet.md` — P1（2026-04-22, ~15.7k chars）
 - [x] **DRAFT** — `01-infrastructure/layer2/scroll.md` — P1（2026-04-22, ~13.1k chars）
 - [x] **DRAFT** — `01-infrastructure/layer2/linea.md` — P2（2026-04-22, ~11.2k chars）
@@ -159,86 +159,86 @@
 
 ### DeFi
 
-- [ ] TODO — `04-dapp/defi/_index.md` — P0
-- [ ] TODO — `04-dapp/defi/uniswap-evolution.md` — P0
-- [ ] TODO — `04-dapp/defi/curve-stableswap.md` — P1
-- [ ] TODO — `04-dapp/defi/balancer.md` — P2
-- [ ] TODO — `04-dapp/defi/dex-aggregators.md` — P1
-- [ ] TODO — `04-dapp/defi/lending-aave.md` — P0
-- [ ] TODO — `04-dapp/defi/lending-compound.md` — P1
-- [ ] TODO — `04-dapp/defi/lending-morpho.md` — P1
-- [ ] TODO — `04-dapp/defi/lending-spark-maker.md` — P1
-- [ ] TODO — `04-dapp/defi/perps-dydx-gmx.md` — P1
-- [ ] TODO — `04-dapp/defi/perps-hyperliquid.md` — P1
-- [ ] TODO — `04-dapp/defi/options-lyra-ribbon.md` — P2
-- [ ] TODO — `04-dapp/defi/yield-yearn-pendle.md` — P1
-- [ ] TODO — `04-dapp/defi/liquid-staking.md` — P0
-- [ ] TODO — `04-dapp/defi/restaking-eigenlayer.md` — P0
-- [ ] TODO — `04-dapp/defi/mev-flashbots.md` — P0
+- [x] DRAFT — `04-dapp/defi/_index.md` — P0
+- [x] DRAFT — `04-dapp/defi/uniswap-evolution.md` — P0
+- [x] DRAFT — `04-dapp/defi/curve-stableswap.md` — P1
+- [x] DRAFT — `04-dapp/defi/balancer.md` — P2
+- [x] DRAFT — `04-dapp/defi/dex-aggregators.md` — P1
+- [x] DRAFT — `04-dapp/defi/lending-aave.md` — P0
+- [x] DRAFT — `04-dapp/defi/lending-compound.md` — P1
+- [x] DRAFT — `04-dapp/defi/lending-morpho.md` — P1
+- [x] DRAFT — `04-dapp/defi/lending-spark-maker.md` — P1
+- [x] DRAFT — `04-dapp/defi/perps-dydx-gmx.md` — P1
+- [x] DRAFT — `04-dapp/defi/perps-hyperliquid.md` — P1
+- [x] DRAFT — `04-dapp/defi/options-lyra-ribbon.md` — P2
+- [x] DRAFT — `04-dapp/defi/yield-yearn-pendle.md` — P1
+- [x] DRAFT — `04-dapp/defi/liquid-staking.md` — P0
+- [x] DRAFT — `04-dapp/defi/restaking-eigenlayer.md` — P0
+- [x] DRAFT — `04-dapp/defi/mev-flashbots.md` — P0
 
 ### NFT / 稳定币 / RWA / Social
 
-- [ ] TODO — `04-dapp/nft/nft-history.md` — P1
-- [ ] TODO — `04-dapp/nft/marketplaces.md` — P1
-- [ ] TODO — `04-dapp/nft/royalty-and-standards.md` — P2
-- [ ] TODO — `04-dapp/nft/nftfi.md` — P2
-- [ ] TODO — `04-dapp/stablecoin/_index.md` — P0
-- [ ] TODO — `04-dapp/stablecoin/usdt-tether.md` — P0
-- [ ] TODO — `04-dapp/stablecoin/usdc-circle.md` — P0
-- [ ] TODO — `04-dapp/stablecoin/pyusd-paxos.md` — P1
-- [ ] TODO — `04-dapp/stablecoin/dai-maker.md` — P0
-- [ ] TODO — `04-dapp/stablecoin/frax.md` — P1
-- [ ] TODO — `04-dapp/stablecoin/usde-ethena.md` — P1
-- [ ] TODO — `04-dapp/stablecoin/algo-stable-history.md` — P1
-- [ ] TODO — `04-dapp/stablecoin/regulatory-landscape.md` — P0
-- [ ] TODO — `04-dapp/rwa/_index.md` — P0
-- [ ] TODO — `04-dapp/rwa/tokenization-treasury.md` — P0
-- [ ] TODO — `04-dapp/rwa/private-credit.md` — P1
-- [ ] TODO — `04-dapp/rwa/real-estate.md` — P2
-- [ ] TODO — `04-dapp/rwa/rwa-contract-design.md` — P0
-- [ ] TODO — `04-dapp/social-dao/dao-governance.md` — P1
-- [ ] TODO — `04-dapp/social-dao/ens.md` — P1
-- [ ] TODO — `04-dapp/social-dao/lens-farcaster.md` — P1
-- [ ] TODO — `04-dapp/social-dao/sbt-soulbound.md` — P2
-- [ ] TODO — `04-dapp/gaming-metaverse.md` — P2
+- [x] DRAFT — `04-dapp/nft/nft-history.md` — P1
+- [x] DRAFT — `04-dapp/nft/marketplaces.md` — P1
+- [x] DRAFT — `04-dapp/nft/royalty-and-standards.md` — P2
+- [x] DRAFT — `04-dapp/nft/nftfi.md` — P2
+- [x] DRAFT — `04-dapp/stablecoin/_index.md` — P0
+- [x] DRAFT — `04-dapp/stablecoin/usdt-tether.md` — P0
+- [x] DRAFT — `04-dapp/stablecoin/usdc-circle.md` — P0
+- [x] DRAFT — `04-dapp/stablecoin/pyusd-paxos.md` — P1
+- [x] DRAFT — `04-dapp/stablecoin/dai-maker.md` — P0
+- [x] DRAFT — `04-dapp/stablecoin/frax.md` — P1
+- [x] DRAFT — `04-dapp/stablecoin/usde-ethena.md` — P1
+- [x] DRAFT — `04-dapp/stablecoin/algo-stable-history.md` — P1
+- [x] DRAFT — `04-dapp/stablecoin/regulatory-landscape.md` — P0
+- [x] DRAFT — `04-dapp/rwa/_index.md` — P0
+- [x] DRAFT — `04-dapp/rwa/tokenization-treasury.md` — P0
+- [x] DRAFT — `04-dapp/rwa/private-credit.md` — P1
+- [x] DRAFT — `04-dapp/rwa/real-estate.md` — P2
+- [x] DRAFT — `04-dapp/rwa/rwa-contract-design.md` — P0
+- [x] DRAFT — `04-dapp/social-dao/dao-governance.md` — P1
+- [x] DRAFT — `04-dapp/social-dao/ens.md` — P1
+- [x] DRAFT — `04-dapp/social-dao/lens-farcaster.md` — P1
+- [x] DRAFT — `04-dapp/social-dao/sbt-soulbound.md` — P2
+- [x] DRAFT — `04-dapp/gaming-metaverse.md` — P2
 
 ## 05. 安全
 
-- [ ] TODO — `05-security/_index.md` — P0
-- [ ] TODO — `05-security/chain-consensus-security.md` — P0
-- [ ] TODO — `05-security/contract-vulnerabilities.md` — P0
-- [ ] TODO — `05-security/audit-methodology.md` — P1
-- [ ] TODO — `05-security/formal-verification.md` — P1
-- [ ] TODO — `05-security/static-tools.md` — P1
-- [ ] TODO — `05-security/fuzzing-tools.md` — P1
-- [ ] TODO — `05-security/bridge-hack-postmortems.md` — P0
-- [ ] TODO — `05-security/defi-exploit-postmortems.md` — P0
-- [ ] TODO — `05-security/security-best-practices.md` — P0
+- [x] DRAFT — `05-security/_index.md` — P0
+- [x] DRAFT — `05-security/chain-consensus-security.md` — P0
+- [x] DRAFT — `05-security/contract-vulnerabilities.md` — P0
+- [x] DRAFT — `05-security/audit-methodology.md` — P1
+- [x] DRAFT — `05-security/formal-verification.md` — P1
+- [x] DRAFT — `05-security/static-tools.md` — P1
+- [x] DRAFT — `05-security/fuzzing-tools.md` — P1
+- [x] DRAFT — `05-security/bridge-hack-postmortems.md` — P0
+- [x] DRAFT — `05-security/defi-exploit-postmortems.md` — P0
+- [x] DRAFT — `05-security/security-best-practices.md` — P0
 
 ## 06. 第三方服务
 
-- [ ] TODO — `06-third-party/rpc-node-providers.md` — P0
-- [ ] TODO — `06-third-party/indexing/the-graph.md` — P0
-- [ ] TODO — `06-third-party/indexing/subsquid.md` — P2
-- [ ] TODO — `06-third-party/indexing/goldsky.md` — P2
-- [ ] TODO — `06-third-party/analytics/dune.md` — P0
-- [ ] TODO — `06-third-party/analytics/nansen.md` — P1
-- [ ] TODO — `06-third-party/analytics/arkham.md` — P2
-- [ ] TODO — `06-third-party/analytics/defillama.md` — P0
-- [ ] TODO — `06-third-party/kyt-kya/chainalysis.md` — P0
-- [ ] TODO — `06-third-party/kyt-kya/elliptic.md` — P1
-- [ ] TODO — `06-third-party/kyt-kya/trm-labs.md` — P2
-- [ ] TODO — `06-third-party/audit-firms/certik.md` — P1
-- [ ] TODO — `06-third-party/audit-firms/slowmist.md` — P0
-- [ ] TODO — `06-third-party/audit-firms/trail-of-bits.md` — P1
-- [ ] TODO — `06-third-party/audit-firms/openzeppelin.md` — P0
-- [ ] TODO — `06-third-party/audit-firms/chainsecurity.md` — P2
-- [ ] TODO — `06-third-party/explorer/etherscan.md` — P0
-- [ ] TODO — `06-third-party/explorer/solscan.md` — P1
-- [ ] TODO — `06-third-party/explorer/blockscout.md` — P2
-- [ ] TODO — `06-third-party/dev-infra/thirdweb-moralis.md` — P1
-- [ ] TODO — `06-third-party/dev-infra/tenderly.md` — P1
-- [ ] TODO — `06-third-party/dev-infra/pimlico-paymaster.md` — P2
+- [x] DRAFT — `06-third-party/rpc-node-providers.md` — P0
+- [x] DRAFT — `06-third-party/indexing/the-graph.md` — P0
+- [x] DRAFT — `06-third-party/indexing/subsquid.md` — P2
+- [x] DRAFT — `06-third-party/indexing/goldsky.md` — P2
+- [x] DRAFT — `06-third-party/analytics/dune.md` — P0
+- [x] DRAFT — `06-third-party/analytics/nansen.md` — P1
+- [x] DRAFT — `06-third-party/analytics/arkham.md` — P2
+- [x] DRAFT — `06-third-party/analytics/defillama.md` — P0
+- [x] DRAFT — `06-third-party/kyt-kya/chainalysis.md` — P0
+- [x] DRAFT — `06-third-party/kyt-kya/elliptic.md` — P1
+- [x] DRAFT — `06-third-party/kyt-kya/trm-labs.md` — P2
+- [x] DRAFT — `06-third-party/audit-firms/certik.md` — P1
+- [x] DRAFT — `06-third-party/audit-firms/slowmist.md` — P0
+- [x] DRAFT — `06-third-party/audit-firms/trail-of-bits.md` — P1
+- [x] DRAFT — `06-third-party/audit-firms/openzeppelin.md` — P0
+- [x] DRAFT — `06-third-party/audit-firms/chainsecurity.md` — P2
+- [x] DRAFT — `06-third-party/explorer/etherscan.md` — P0
+- [x] DRAFT — `06-third-party/explorer/solscan.md` — P1
+- [x] DRAFT — `06-third-party/explorer/blockscout.md` — P2
+- [x] DRAFT — `06-third-party/dev-infra/thirdweb-moralis.md` — P1
+- [x] DRAFT — `06-third-party/dev-infra/tenderly.md` — P1
+- [x] DRAFT — `06-third-party/dev-infra/pimlico-paymaster.md` — P2
 
 ## 07. 隐私
 
@@ -255,21 +255,21 @@
 
 ### FHE
 
-- [ ] TODO — `07-privacy/fhe/_index.md` — P1
-- [ ] TODO — `07-privacy/fhe/partial-he.md` — P2
-- [ ] TODO — `07-privacy/fhe/fully-he.md` — P1
-- [ ] TODO — `07-privacy/fhe/fhe-in-blockchain.md` — P1
+- [x] DRAFT — `07-privacy/fhe/_index.md` — P1
+- [x] DRAFT — `07-privacy/fhe/partial-he.md` — P2
+- [x] DRAFT — `07-privacy/fhe/fully-he.md` — P1
+- [x] DRAFT — `07-privacy/fhe/fhe-in-blockchain.md` — P1
 
 ### MPC
 
-- [ ] TODO — `07-privacy/mpc/secret-sharing.md` — P1
-- [ ] TODO — `07-privacy/mpc/mpc-protocols.md` — P1
-- [ ] TODO — `07-privacy/mpc/threshold-signatures.md` — P0
+- [x] DRAFT — `07-privacy/mpc/secret-sharing.md` — P1
+- [x] DRAFT — `07-privacy/mpc/mpc-protocols.md` — P1
+- [x] DRAFT — `07-privacy/mpc/threshold-signatures.md` — P0
 
 ### 混币 / TEE
 
-- [ ] TODO — `07-privacy/mixer-privacy-coins.md` — P1
-- [ ] TODO — `07-privacy/trusted-execution.md` — P2
+- [x] DRAFT — `07-privacy/mixer-privacy-coins.md` — P1
+- [x] DRAFT — `07-privacy/trusted-execution.md` — P2
 
 ---
 
@@ -279,24 +279,27 @@
 | --- | --- |
 | DONE | 0 |
 | REVIEWED | 0 |
-| DRAFT | 12（Bitcoin / Ethereum / Solana + 共识 9 篇）|
-| TODO | ~131 |
+| DRAFT | ~210（覆盖 00–08 全部模块）|
+| TODO | 0 |
 
 > 统计可用 `grep -c "TODO\|DRAFT\|REVIEWED\|DONE" PROGRESS.md` 快速核对。
 
 ## Batch 进度
 
-- **Batch 0 (地基)** — 🟡 进行中：目录 ✅ / 基础文件 ✅ / 占位文件 🟡 / 3 篇示范文 🟡
-- Batch 1 (公链补齐) — ⬜
-- **Batch 2 (共识+账本)** — 🟡 共识 9 篇 DRAFT 完成（2026-04-22），账本模型待做
-- Batch 3 (L2+DA) — ⬜
-- Batch 4 (跨链+预言机) — ⬜
-- Batch 5 (钱包) — ⬜
-- Batch 6 (智能合约) — ⬜
-- Batch 7 (DApp 核心) — ⬜
-- Batch 8 (稳定币+RWA+NFT+Social) — ⬜
-- Batch 9 (安全+第三方) — ⬜
-- Batch 10 (隐私) — ⬜
+- **Batch 0 (地基)** — ✅ 全部 DRAFT 完成
+- **Batch 1 (公链补齐)** — ✅ DRAFT
+- **Batch 2 (共识+账本)** — ✅ DRAFT
+- **Batch 3 (L2+DA)** — ✅ DRAFT
+- **Batch 4 (跨链+预言机)** — ✅ DRAFT
+- **Batch 5 (钱包)** — ✅ DRAFT
+- **Batch 6 (智能合约)** — ✅ DRAFT
+- **Batch 7 (DApp 核心)** — ✅ DRAFT
+- **Batch 8 (稳定币+RWA+NFT+Social)** — ✅ DRAFT
+- **Batch 9 (安全+第三方)** — ✅ DRAFT
+- **Batch 10 (隐私)** — ✅ DRAFT
+- **Batch 11 (Security Incidents 2011–2026 YTD)** — ✅ DRAFT
+
+> 所有模块首轮 DRAFT 已完成；下一阶段进入 REVIEW（链接校验、代码可验证性、事实核对）。
 
 ## 本次完成（2026-04-22）Layer 2 Batch
 
@@ -437,75 +440,75 @@
 时间线完整档案，每起事件独立 md。Tier 分档：T1 损失≥$100M 或行业级影响；T2 $10M–$100M；T3 <$10M 但代表性新载体。初始全部 DRAFT。
 
 ### Index
-- [ ] DRAFT — `08-security-incidents/_index.md` — P0（2026-04-23, ~15.3k chars）
+- [x] DRAFT — `08-security-incidents/_index.md` — P0（2026-04-23, ~15.3k chars）
 
 ### 2011–2019（13 篇）
-- [ ] DRAFT — `08-security-incidents/2011-mtgox-first-breach.md` — T3
-- [ ] DRAFT — `08-security-incidents/2012-linode-bitcoinica.md` — T3
-- [ ] DRAFT — `08-security-incidents/2014-mtgox-collapse.md` — T1
-- [ ] DRAFT — `08-security-incidents/2015-bitstamp.md` — T3
-- [ ] DRAFT — `08-security-incidents/2016-the-dao.md` — T1
-- [ ] DRAFT — `08-security-incidents/2016-bitfinex.md` — T2
-- [ ] DRAFT — `08-security-incidents/2017-parity-wallet-hack.md` — T2
-- [ ] DRAFT — `08-security-incidents/2017-parity-freeze.md` — T1
-- [ ] DRAFT — `08-security-incidents/2017-coindash-ico-dns.md` — T3
-- [ ] DRAFT — `08-security-incidents/2018-coincheck-nem.md` — T1
-- [ ] DRAFT — `08-security-incidents/2018-bitgrail.md` — T3
-- [ ] DRAFT — `08-security-incidents/2019-binance-7k-btc.md` — T2
-- [ ] DRAFT — `08-security-incidents/2019-upbit.md` — T2
+- [x] DRAFT — `08-security-incidents/2011-mtgox-first-breach.md` — T3
+- [x] DRAFT — `08-security-incidents/2012-linode-bitcoinica.md` — T3
+- [x] DRAFT — `08-security-incidents/2014-mtgox-collapse.md` — T1
+- [x] DRAFT — `08-security-incidents/2015-bitstamp.md` — T3
+- [x] DRAFT — `08-security-incidents/2016-the-dao.md` — T1
+- [x] DRAFT — `08-security-incidents/2016-bitfinex.md` — T2
+- [x] DRAFT — `08-security-incidents/2017-parity-wallet-hack.md` — T2
+- [x] DRAFT — `08-security-incidents/2017-parity-freeze.md` — T1
+- [x] DRAFT — `08-security-incidents/2017-coindash-ico-dns.md` — T3
+- [x] DRAFT — `08-security-incidents/2018-coincheck-nem.md` — T1
+- [x] DRAFT — `08-security-incidents/2018-bitgrail.md` — T3
+- [x] DRAFT — `08-security-incidents/2019-binance-7k-btc.md` — T2
+- [x] DRAFT — `08-security-incidents/2019-upbit.md` — T2
 
 ### 2020–2021（10 篇）
-- [ ] DRAFT — `08-security-incidents/2020-lendfme-reentrancy.md` — T2
-- [ ] DRAFT — `08-security-incidents/2020-bzx-flashloan-series.md` — T2
-- [ ] DRAFT — `08-security-incidents/2020-harvest-finance.md` — T2
-- [ ] DRAFT — `08-security-incidents/2020-kucoin.md` — T1
-- [ ] DRAFT — `08-security-incidents/2021-polynetwork.md` — T1
-- [ ] DRAFT — `08-security-incidents/2021-badgerdao.md` — T1
-- [ ] DRAFT — `08-security-incidents/2021-cream-finance.md` — T1
-- [ ] DRAFT — `08-security-incidents/2021-pancakebunny.md` — T2
-- [ ] DRAFT — `08-security-incidents/2021-bitmart.md` — T2
-- [ ] DRAFT — `08-security-incidents/2021-vulcan-forged.md` — T3
+- [x] DRAFT — `08-security-incidents/2020-lendfme-reentrancy.md` — T2
+- [x] DRAFT — `08-security-incidents/2020-bzx-flashloan-series.md` — T2
+- [x] DRAFT — `08-security-incidents/2020-harvest-finance.md` — T2
+- [x] DRAFT — `08-security-incidents/2020-kucoin.md` — T1
+- [x] DRAFT — `08-security-incidents/2021-polynetwork.md` — T1
+- [x] DRAFT — `08-security-incidents/2021-badgerdao.md` — T1
+- [x] DRAFT — `08-security-incidents/2021-cream-finance.md` — T1
+- [x] DRAFT — `08-security-incidents/2021-pancakebunny.md` — T2
+- [x] DRAFT — `08-security-incidents/2021-bitmart.md` — T2
+- [x] DRAFT — `08-security-incidents/2021-vulcan-forged.md` — T3
 
 ### 2022（9 篇）
-- [ ] DRAFT — `08-security-incidents/2022-ronin.md` — T1
-- [ ] DRAFT — `08-security-incidents/2022-wormhole.md` — T1
-- [ ] DRAFT — `08-security-incidents/2022-nomad.md` — T1
-- [ ] DRAFT — `08-security-incidents/2022-beanstalk-governance.md` — T1
-- [ ] DRAFT — `08-security-incidents/2022-harmony-horizon.md` — T2
-- [ ] DRAFT — `08-security-incidents/2022-mango-markets.md` — T2
-- [ ] DRAFT — `08-security-incidents/2022-bnb-chain-bridge.md` — T1
-- [ ] DRAFT — `08-security-incidents/2022-ftx-collapse.md` — T1
-- [ ] DRAFT — `08-security-incidents/2022-wintermute.md` — T2
+- [x] DRAFT — `08-security-incidents/2022-ronin.md` — T1
+- [x] DRAFT — `08-security-incidents/2022-wormhole.md` — T1
+- [x] DRAFT — `08-security-incidents/2022-nomad.md` — T1
+- [x] DRAFT — `08-security-incidents/2022-beanstalk-governance.md` — T1
+- [x] DRAFT — `08-security-incidents/2022-harmony-horizon.md` — T2
+- [x] DRAFT — `08-security-incidents/2022-mango-markets.md` — T2
+- [x] DRAFT — `08-security-incidents/2022-bnb-chain-bridge.md` — T1
+- [x] DRAFT — `08-security-incidents/2022-ftx-collapse.md` — T1
+- [x] DRAFT — `08-security-incidents/2022-wintermute.md` — T2
 
 ### 2023（8 篇）
-- [ ] DRAFT — `08-security-incidents/2023-euler.md` — T1
-- [ ] DRAFT — `08-security-incidents/2023-multichain.md` — T1
-- [ ] DRAFT — `08-security-incidents/2023-mixin.md` — T1
-- [ ] DRAFT — `08-security-incidents/2023-curve-vyper-reentrancy.md` — T1
-- [ ] DRAFT — `08-security-incidents/2023-atomic-wallet.md` — T2
-- [ ] DRAFT — `08-security-incidents/2023-poloniex.md` — T2
-- [ ] DRAFT — `08-security-incidents/2023-ledger-connect-kit.md` — T2
-- [ ] DRAFT — `08-security-incidents/2023-heco-bridge.md` — T3
+- [x] DRAFT — `08-security-incidents/2023-euler.md` — T1
+- [x] DRAFT — `08-security-incidents/2023-multichain.md` — T1
+- [x] DRAFT — `08-security-incidents/2023-mixin.md` — T1
+- [x] DRAFT — `08-security-incidents/2023-curve-vyper-reentrancy.md` — T1
+- [x] DRAFT — `08-security-incidents/2023-atomic-wallet.md` — T2
+- [x] DRAFT — `08-security-incidents/2023-poloniex.md` — T2
+- [x] DRAFT — `08-security-incidents/2023-ledger-connect-kit.md` — T2
+- [x] DRAFT — `08-security-incidents/2023-heco-bridge.md` — T3
 
 ### 2024（8 篇）
-- [ ] DRAFT — `08-security-incidents/2024-playdapp.md` — T1
-- [ ] DRAFT — `08-security-incidents/2024-dmm-bitcoin.md` — T1
-- [ ] DRAFT — `08-security-incidents/2024-wazirx.md` — T1
-- [ ] DRAFT — `08-security-incidents/2024-radiant-capital.md` — T2
-- [ ] DRAFT — `08-security-incidents/2024-orbit-chain.md` — T2
-- [ ] DRAFT — `08-security-incidents/2024-munchables.md` — T3
-- [ ] DRAFT — `08-security-incidents/2024-penpie-reentrancy.md` — T3
-- [ ] DRAFT — `08-security-incidents/2024-gala-games-mint.md` — T2
+- [x] DRAFT — `08-security-incidents/2024-playdapp.md` — T1
+- [x] DRAFT — `08-security-incidents/2024-dmm-bitcoin.md` — T1
+- [x] DRAFT — `08-security-incidents/2024-wazirx.md` — T1
+- [x] DRAFT — `08-security-incidents/2024-radiant-capital.md` — T2
+- [x] DRAFT — `08-security-incidents/2024-orbit-chain.md` — T2
+- [x] DRAFT — `08-security-incidents/2024-munchables.md` — T3
+- [x] DRAFT — `08-security-incidents/2024-penpie-reentrancy.md` — T3
+- [x] DRAFT — `08-security-incidents/2024-gala-games-mint.md` — T2
 
 ### 2025–2026（11 篇）
-- [ ] DRAFT — `08-security-incidents/2025-bybit.md` — T1
-- [ ] DRAFT — `08-security-incidents/2025-abracadabra.md` — T3
-- [ ] DRAFT — `08-security-incidents/2025-infini.md` — T3
-- [ ] DRAFT — `08-security-incidents/2025-zklend.md` — T3
-- [ ] DRAFT — `08-security-incidents/2025-cetus-sui.md` — T1
-- [ ] DRAFT — `08-security-incidents/2025-mantra-om-collapse.md` — T2
-- [ ] DRAFT — `08-security-incidents/2025-hyperliquid-jelly.md` — T2
-- [ ] DRAFT — `08-security-incidents/2025-phemex.md` — T2
-- [ ] DRAFT — `08-security-incidents/2025-four-meme.md` — T3
-- [ ] DRAFT — `08-security-incidents/2025-kiloex.md` — T3
-- [ ] DRAFT — `08-security-incidents/2026-ytd-notable-incidents.md` — N/A
+- [x] DRAFT — `08-security-incidents/2025-bybit.md` — T1
+- [x] DRAFT — `08-security-incidents/2025-abracadabra.md` — T3
+- [x] DRAFT — `08-security-incidents/2025-infini.md` — T3
+- [x] DRAFT — `08-security-incidents/2025-zklend.md` — T3
+- [x] DRAFT — `08-security-incidents/2025-cetus-sui.md` — T1
+- [x] DRAFT — `08-security-incidents/2025-mantra-om-collapse.md` — T2
+- [x] DRAFT — `08-security-incidents/2025-hyperliquid-jelly.md` — T2
+- [x] DRAFT — `08-security-incidents/2025-phemex.md` — T2
+- [x] DRAFT — `08-security-incidents/2025-four-meme.md` — T3
+- [x] DRAFT — `08-security-incidents/2025-kiloex.md` — T3
+- [x] DRAFT — `08-security-incidents/2026-ytd-notable-incidents.md` — N/A
