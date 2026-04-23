@@ -500,7 +500,7 @@
 - [x] DRAFT — `08-security-incidents/defi-protocol/2024-penpie-reentrancy.md` — T3
 - [x] DRAFT — `08-security-incidents/governance-admin/2024-gala-games-mint.md` — T2
 
-### 2025–2026（11 篇）
+### 2025–2026（14 篇）
 - [x] DRAFT — `08-security-incidents/cex-custodian/2025-bybit.md` — T1
 - [x] DRAFT — `08-security-incidents/defi-protocol/2025-abracadabra.md` — T3
 - [x] DRAFT — `08-security-incidents/defi-protocol/2025-infini.md` — T3
@@ -511,4 +511,7 @@
 - [x] DRAFT — `08-security-incidents/cex-custodian/2025-phemex.md` — T2
 - [x] DRAFT — `08-security-incidents/defi-protocol/2025-four-meme.md` — T3
 - [x] DRAFT — `08-security-incidents/oracle-mev/2025-kiloex.md` — T3
-- [x] DRAFT — `08-security-incidents/misc/2026-ytd-notable-incidents.md` — N/A
+- [x] DRAFT — `08-security-incidents/supply-chain-phish/2026-drift-protocol.md` — T1（$285M，Solana，DPRK 社工 + durable nonce）
+- [x] DRAFT — `08-security-incidents/bridge/2026-hyperbridge.md` — T2（$2.5M，自研 MMR 验证库边界漏洞）
+- [x] DRAFT — `08-security-incidents/bridge/2026-kelp-dao.md` — T1（$292M，LayerZero 单 DVN + RPC 投毒 + DDoS）
+- [x] DRAFT — `08-security-incidents/misc/2026-ytd-notable-incidents.md` — N/A（2026 Q1–Q2 聚合索引）

@@ -46,12 +46,12 @@ primary_sources:
 | 子目录 | 含义 | 数量 | 典型事件 |
 |--------|------|------|---------|
 | [`cex-custodian/`](./cex-custodian/) | 中心化交易所 / 托管商（热钱包被盗、Multisig 阈值被破、内鬼） | 17 | Mt.Gox、Coincheck、FTX、DMM、**Bybit $1.46B** |
-| [`bridge/`](./bridge/) | 跨链桥（签名验证、初始化、多签密钥、IAVL proof） | 9 | Ronin、Wormhole、Nomad、BNB Bridge、Poly |
+| [`bridge/`](./bridge/) | 跨链桥（签名验证、初始化、多签密钥、IAVL proof、RPC/DVN 供应链） | 11 | Ronin、Wormhole、Nomad、BNB Bridge、Poly、**Kelp DAO $292M**、Hyperbridge |
 | [`defi-protocol/`](./defi-protocol/) | DeFi 协议自身逻辑/重入/编译器/流动性数学 bug | 10 | The DAO、Euler、Curve Vyper、Cetus、Penpie |
 | [`oracle-mev/`](./oracle-mev/) | 预言机闪贷操纵 / 永续合约价格 oracle | 7 | bZx、Harvest、Cream、Mango、Hyperliquid JELLY |
 | [`wallet-key/`](./wallet-key/) | 钱包 / 密钥管理 / 签名库漏洞（非 CEX 场景） | 5 | Parity Multisig、Parity Freeze、Wintermute、Atomic |
 | [`governance-admin/`](./governance-admin/) | 治理闪贷 / Admin 权限 / Mint 特权滥用 | 3 | Beanstalk、PlayDapp、Gala Games |
-| [`supply-chain-phish/`](./supply-chain-phish/) | 前端劫持 / CDN / npm / LinkedIn 假面试 / 内鬼开发 | 6 | BadgerDAO、Ledger Connect Kit、Munchables、Radiant |
+| [`supply-chain-phish/`](./supply-chain-phish/) | 前端劫持 / CDN / npm / LinkedIn 假面试 / 内鬼开发 | 7 | BadgerDAO、Ledger Connect Kit、Munchables、Radiant、**Drift $285M** |
 | [`misc/`](./misc/) | 代币坍塌 / 年度聚合 / 暂不明类别 | 2 | Mantra OM、2026 YTD |
 
 ---
@@ -133,7 +133,7 @@ primary_sources:
 | 2024 | Penpie Reentrancy | $27M | DeFi / 重入 | T3 | [2024-penpie-reentrancy](./defi-protocol/2024-penpie-reentrancy.md) |
 | 2024 | Gala Games Mint | $21M (追回) | Game / 权限 | T2 | [2024-gala-games-mint](./governance-admin/2024-gala-games-mint.md) |
 
-### 2025–2026（11 events）
+### 2025–2026（14 events）
 
 | 年份 | 事件 | 损失 | 类别 | Tier | 档案 |
 |------|------|-----------|------|------|------|
@@ -147,7 +147,10 @@ primary_sources:
 | 2025 | Phemex | $85M | CEX / Key-Mgmt | T2 | [2025-phemex](./cex-custodian/2025-phemex.md) |
 | 2025 | Four.meme | ~$3M | DeFi / Launchpad | T3 | [2025-four-meme](./defi-protocol/2025-four-meme.md) |
 | 2025 | KiloEx | ~$7M | DeFi / Perp Oracle | T3 | [2025-kiloex](./oracle-mev/2025-kiloex.md) |
-| 2026 | YTD Notable Incidents (Q1–Q2) | 聚合 | 多类 | N/A | [2026-ytd-notable-incidents](./misc/2026-ytd-notable-incidents.md) |
+| **2026** | **Drift Protocol (Solana Perp)** | **$285M** | Supply-Chain + Key-Mgmt（DPRK 社工 → admin 签名 + durable nonce） | **T1** | [2026-drift-protocol](./supply-chain-phish/2026-drift-protocol.md) |
+| **2026** | **Hyperbridge** | **$2.5M** | Bridge / Protocol-Bug（自研 MMR 验证库 `leaf_index` 边界漏洞） | **T2** | [2026-hyperbridge](./bridge/2026-hyperbridge.md) |
+| **2026** | **Kelp DAO / rsETH (LayerZero)** | **$292M** | Bridge / Supply-Chain（单 DVN + RPC 投毒 + DDoS） | **T1** | [2026-kelp-dao](./bridge/2026-kelp-dao.md) |
+| 2026 | YTD Notable Incidents (Q1–Q2) | 聚合（Aave $27.78M、Step Finance $27.3M、Truebit $26.2M、Resolv $25M、Rhea $18.4M 等） | 多类 | N/A | [2026-ytd-notable-incidents](./misc/2026-ytd-notable-incidents.md) |
 
 ---
 
@@ -166,9 +169,9 @@ primary_sources:
 | 7 | **Coincheck NEM** | 2018 | $534M | CEX |
 | 8 | **Wormhole** | 2022 | $325M | Bridge |
 | 9 | **DMM Bitcoin** | 2024 | $305M | CEX |
-| 10 | **PlayDapp** | 2024 | $290M | Game / 权限 |
+| 10 | **Kelp DAO / rsETH** | 2026 | $292M | Bridge / DVN+RPC |
 
-（紧随其后：KuCoin $281M 2020、Cetus $223M 2025、Mixin $200M 2023、BitMart $196M 2021、Euler $197M 2023、Nomad $190M 2022、Beanstalk $182M 2022 ……）
+（紧随其后：PlayDapp $290M 2024、Drift Protocol $285M 2026、KuCoin $281M 2020、Cetus $223M 2025、Mixin $200M 2023、BitMart $196M 2021、Euler $197M 2023、Nomad $190M 2022、Beanstalk $182M 2022 ……）
 
 ---
 
