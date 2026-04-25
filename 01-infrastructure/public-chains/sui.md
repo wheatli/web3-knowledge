@@ -329,6 +329,194 @@ sui client ptb \
 | 存储退款 | Storage Rebate | 删除/缩减 Object 退还 99% 存储费 |
 | 检查点 | Checkpoint | Sui 的"块"概念，每 ~250 ms 产出 |
 
+## 11. FAQ
+
+以下问题来自与学习者的真实对话，聚焦 Sui 最容易"从抽象掉到具体"出错的几个点。
+
+### Q1：Sui 真正独特的设计是哪些？与 Aptos / Solana / Ethereum 相比什么是"只有 Sui 这样做"？
+
+5 个互相咬合的设计点：
+
+1. **Object-centric 状态模型**：不是 `account → balance/storage`，而是一切皆 Object，每个带 `ID / version / owner`。Owner 类型（Owned / Shared / Immutable / Wrapped / Dynamic Field）决定交易验证路径。这不是语法糖，是并行执行的前提——依赖关系**显式写在 tx 输入里**，不需要推测执行或回滚。
+2. **Fast path：owned-object 不走共识**。仅涉及 Owned object 的交易走 Byzantine Consistent Broadcast，2f+1 签名即终局（~400 ms），**不进入 Mysticeti**。只有涉及 Shared object 的交易才走共识。等价于把"因果序 vs 全序"分离：大多数单用户操作只需因果序。
+3. **Sui Move（与 Aptos Move 分叉）**：删除 global storage，所有资源必须存在 Object 里；`key` ability + UID 让 object 有链上真实身份；`transfer` 是协议原语而非合约逻辑；权限通过 Capability object（而非 `msg.sender` 检查）。
+4. **Programmable Transaction Block (PTB)**：一个 tx 串联最多 ~1024 条 Move call / 原生命令，前一个的返回值可直接作为后一个的输入，原子执行。去掉了"为组合操作单独部署 router 合约"的必要。
+5. **Mysticeti + Narwhal 解耦**：数据可用性（DAG mempool）与排序（共识提交规则）分离，只对 DAG 的 commit point 投票，带宽利用率远高于 Tendermint 式"打包—投票—出块"。
+
+**一句话**：其他链在比"谁共识更快"，Sui 在做"让大部分 tx 根本不需要共识"。
+
+### Q2：Fast path 下 validator 如何验证用户提交的 tx？是否要验证 object version？
+
+是的，version 验证是 fast path **防双花的唯一锚点**。Validator 收到 tx 后的检查：
+
+1. **签名 / 语法层**：sender 签名合法；gas object 属于 sender，余额 ≥ `budget × price`。
+2. **Object 有效性**（对每个 owned input）：
+   - ObjectID 存在
+   - **Version 严格等于本地记录的当前 version**（必须 `==`，不是 `≥`）
+   - Digest 等于本地 object 的 digest（防 TOCTOU）
+   - Owner 是 sender（或持有对应 Capability）
+   - 类型确实是 `Owned`
+3. **Lock 获取（核心）**：validator 本地维护 `(ObjectID, Version) → signed_tx_digest`。
+   - 未锁 → 记录本 tx digest，签名返回
+   - 已锁给**同一 tx** → 幂等重发
+   - 已锁给**另一 tx** → 拒签（equivocation detected）
+
+每个诚实 validator 对 `(O, v)` 最多签一个 tx → 最多一个 tx 能拿到 2f+1 → 无需共识即可防双花。
+
+**两阶段视角**：
+
+| 阶段 | 输入 | 动作 | version 变化 |
+| --- | --- | --- | --- |
+| Signing (vote) | raw tx | 上述 1–3 检查、上锁、签名 | 不变 |
+| Execution (cert) | 2f+1 certificate | 跑 Move、写新状态 | `v → v+1`，旧 `(O,v)` 锁释放 |
+
+**坑：equivocation 自锁**。若 sender 把 `tx_A(O@v)` 和 `tx_B(O@v)` 分别发给不同 validator 子集，两 tx 都拿不到 2f+1，但 `(O,v)` 在所有诚实 validator 处都被锁住——**object 卡死直到 epoch 切换**。这是 Sui 显式选择的 tradeoff。
+
+### Q3：`2f+1` 中的 f 是什么？全局如何保证所有人认同同一个 f？节点动态加入/退出时 f 如何变且大家一致？
+
+**f 的定义**：经典 BFT `n ≥ 3f+1` 的作恶上限。但 Sui 是 PoS 权益加权，**f 是权益单位不是节点数**：
+
+- 每个 validator 的 voting power = 其 stake 归一化后的值，**全网总和 = 10000**
+- 作恶上限 f = 最多 3333（<1/3）
+- Quorum `2f+1` = 累计 voting power **≥ 6667**（>2/3 stake）
+
+"拿到 2f+1 个回应"准确说法是**签名累计权重 ≥ 6667**，和节点数量无关。按 stake 计数可防 Sybil，要突破阈值需真金白银。
+
+**全局一致性来自"committee 是链上状态"**：
+
+- `SuiSystemState`（shared object，地址 `0x5`）记录当前 epoch 的 validator 集合 + 每人 voting power
+- f 可直接算出：`f = floor((total_voting_power - 1) / 3)`
+- 所有诚实 full node 同步到同一状态 → 自动得到同一个 f
+
+客户端验证 2f+1 签名流程：读当前 epoch committee → 对每个签名累加其 voting power → 检查是否 ≥ quorum。epoch 号是签名的一部分，防止用旧 committee 验新签名。
+
+**动态进出靠"epoch 边界"原子切换**：committee 在 epoch 内冻结（主网 epoch ≈ 24h）。
+
+- **Epoch 内**：候选人用 `request_add_validator`、现任用 `request_remove_validator`、用户 `request_add_stake` / `request_withdraw_stake`——这些都只是 **pending 状态**，当前投票权不变。
+- **Epoch N → N+1**：当前 committee 对 `change_epoch` 交易跑共识；该交易内应用所有 pending 变更，确定性计算新 voting power，写入 `SuiSystemState`。**由旧 committee 的 2f+1 签名背书**。
+- 所有诚实节点独立算出的新 committee 必然相同（相同旧状态 + 相同 pending + 确定性函数）。
+
+**信任链**：
+```
+Genesis committee（创世写死）
+   ──签名─→ Epoch 1 committee
+               ──签名─→ Epoch 2 committee
+                           ...
+```
+Light client 只需顺着这条链验证每次 epoch 切换签名，即可安全跟上当前 committee，不用同步全部历史。
+
+**尖角**：
+
+- **Epoch 内 > f 作恶**：安全/活性可能受损至 epoch 切换。代价即静态 committee 的代价，靠 slashing + 24h 窗口压低风险。
+- **客户端落后一个 epoch**：用旧 committee 验新签名会失败，必须先追到最新 epoch。
+- 即使没有节点进出，只要 stake 分布变化，voting power 归一化后 f 与 quorum 阈值仍会变——每 epoch 重算。
+
+### Q4：SUI 余额如何记账？转账 / 质押的 TX 具体长什么样？
+
+**余额没有字段，是 `Coin<SUI>` object 的聚合**：
+
+```move
+struct Coin<phantom T> has key, store {
+    id: UID,
+    balance: Balance<T>,  // u64，单位 MIST（1 SUI = 10^9 MIST）
+}
+```
+
+用户余额 = 其地址下所有 `Coin<SUI>` object balance 之和。同一"余额 1000 SUI"可以是 1 个 coin 也可以是 100 个 coin——链上结构不同，影响后续 tx 如何构造。钱包展示的 balance 是客户端聚合视图，**链上没有这个数字**。
+
+- `coin::split(&mut c, amount)` → c 的 UID 不变、version+1、balance 减少；返回新 Coin（新 UID）。
+- `coin::join(&mut c, c2)` → c2 balance 并入 c，c2 UID 销毁。
+
+**TX 顶层结构**：
+
+```
+TransactionData {
+  sender, gas_data { payment, owner, price, budget }, expiration,
+  kind: ProgrammableTransaction(PTB { inputs: [CallArg...], commands: [Command...] })
+}
+```
+
+Command 原语：`MoveCall` / `TransferObjects` / `SplitCoins` / `MergeCoins` / `Publish` / `MakeMoveVec` / `Upgrade`。
+
+#### 场景 A：转账 10 SUI 给 Bob（用 gas coin 作来源）
+
+```
+inputs:
+  [0] Pure(u64 = 10_000_000_000)       // 10 SUI
+  [1] Pure(address = Bob)
+commands:
+  [0] SplitCoins(GasCoin, [Input(0)])        → Result(0): Coin<SUI> of 10
+  [1] TransferObjects([Result(0)], Input(1)) // owner → Bob
+```
+
+`GasCoin` 是 PTB 对 `gas_data.payment` 的特殊引用；`Pure` 参数是原始字节（无 version/digest）。所有 input 均为 **owned** → **走 fast path**，~400 ms 终局。
+
+上链变化：gas coin balance -= 10 + gas_cost、version+1；产生新 Coin（UID 新、owner=Bob、version=1）；Alice 收到 storage rebate。
+
+#### 场景 B：用独立 `Coin<SUI>` 作源
+
+```
+inputs:
+  [0] Object(ImmOrOwned(id: 0xALICE_COIN, version: 42, digest: 0xABC...))
+  [1] Pure(u64 = 10_000_000_000)
+  [2] Pure(address = Bob)
+commands:
+  [0] SplitCoins(Input(0), [Input(1)])  → Result(0)
+  [1] TransferObjects([Result(0)], Input(2))
+```
+
+Input[0] 的三元组 `(id, version, digest)` 就是 Q2 中 validator 严格校验的锚点。
+
+#### 场景 C：原生 staking（委托给 validator）
+
+System package `0x3`，入口 `sui_system::request_add_stake`：
+
+```
+inputs:
+  [0] Object(Shared(id: 0x5, initial_shared_version: 1, mutable: true))  // SuiSystemState
+  [1] Pure(u64 = 100_000_000_000)
+  [2] Pure(address = 0xVALIDATOR)
+commands:
+  [0] SplitCoins(GasCoin, [Input(1)])   → Result(0): Coin<SUI> 100
+  [1] MoveCall {
+        package: 0x3, module: "sui_system", function: "request_add_stake",
+        args: [Input(0), Result(0), Input(2)],
+      }
+```
+
+结果：100 SUI 并入 staking pool；用户收到一个 owned `StakedSui` object（记录 pool_id / principal / activation_epoch）作赎回凭证。
+
+#### 场景 D：存入第三方 DeFi 合约（借贷池 / AMM）
+
+```
+inputs:
+  [0] Object(Shared(id: 0xPOOL, initial_shared_version: 1337, mutable: true))
+  [1] Pure(u64 = 100_000_000_000)
+  [2] Pure(address = Alice)
+commands:
+  [0] SplitCoins(GasCoin, [Input(1)])       → Result(0)
+  [1] MoveCall {
+        package: 0xLENDING_PKG, module: "lending", function: "deposit",
+        type_args: [<SUI 完整类型路径>],
+        args: [Input(0), Result(0)],
+      }                                      → Result(1): LPToken<SUI>
+  [2] TransferObjects([Result(1)], Input(2))
+```
+
+注意 `Result(1)` 被下一条 command 直接接住并转给 Alice——**这正是 PTB 的价值：原子完成"拆币 → 存入 → 收 LP token"，无需 router 合约**。
+
+#### Owned vs Shared 的关键差异
+
+| 维度 | 转账（场景 A/B） | 原生 staking（C） | DeFi 存入（D） |
+| --- | --- | --- | --- |
+| 关键 input | 仅 owned + pure | shared(`0x5`) + owned | shared pool + owned |
+| 执行路径 | **Fast path** | 共识 | 共识 |
+| 终局时间 | ~400 ms | ~1–2 s | ~1–2 s |
+| 产生凭证 | Coin<SUI>@Bob | StakedSui object | LPToken object |
+| Version 处理 | 客户端带完整 `ObjectRef`，validator 静态校验 | Shared 部分只带 `initial_shared_version`，当前 version 由共识赋予 | 同左 |
+
+**核心分野不在"转 vs 存"而在"输入里是否有 shared object"**——这决定了 400 ms fast path 还是走完整 Mysticeti 共识。
+
 ---
 
 *Last verified: 2026-04-22*
