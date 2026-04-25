@@ -4,7 +4,7 @@ module: 01-infrastructure/public-chains
 priority: P1
 status: DRAFT
 word_count_target: 5000
-last_verified: 2026-04-22
+last_verified: 2026-04-25
 primary_sources:
   - https://aptos.dev/
   - https://github.com/aptos-labs/aptos-core
@@ -292,6 +292,196 @@ aptos account list --query resources --account default
 | 共识超时 | Timeout Certificate (TC) | Pacemaker 推进视图的聚合凭证 |
 | 链上配置 | On-chain Config | `0x1::config` 治理参数 |
 
+## 11. FAQ
+
+以下问题来自与学习者的真实对话，聚焦 Aptos 最容易被 EVM / Sui 经验"想当然"的几个点：账户记账、Quorum Store 解耦、重复交易在多源 batch 下的处理。
+
+### Q1：Aptos 的账户体系如何设计？怎么给用户记账？用户转账和调用合约在底层做什么？
+
+Aptos 在这三件事上都与 EVM 拉开了距离。
+
+**账户三元组（§2.1）**：
+
+$$
+\text{Account} = (\text{sequence\_number},\ \text{authentication\_key},\ \text{resources}: \text{TypeTag} \to \text{Resource})
+$$
+
+- **Address = SHA3-256(auth_key_preimage)\[:32\]**，首次建账后固定；**auth_key 可旋转**，address 不变（与 "地址=pubkey hash" 的 EVM 不同）。
+- **Auth key** 是可插拔指针，支持 Ed25519 / Multi-Ed25519 / Secp256k1 / Passkey / **Keyless (OIDC + Groth16)**。
+- **Sequence number** 全局递增，防重放，同时是并发提交的顺序闸门。
+- **Resources** 按 `TypeTag (module::struct<T>)` 索引，**同一账户同一类型至多 1 份**——线性类型系统在运行时的体现。
+- 两类特殊账户：**Resource Account**（由 `(creator, seed)` 派生，私钥由合约 `SignerCapability` 代持，类似 Solana PDA）、**Keyless Account**（OIDC JWT + SNARK，无私钥）。
+
+**记账不是字段，是资源**——这是与 EVM 最本质的语义差异：
+
+| | EVM | Aptos |
+| --- | --- | --- |
+| 余额表达 | `mapping(address=>uint256)` 合约存储槽 | `CoinStore<T>` / `FungibleStore` Resource 挂在账户下 |
+| 类型约束 | `uint256` 可随意 `+=/-=` | `Coin<T>` 线性值，只能 `move / merge / extract` |
+| 新用户首次收款 | 零成本 | 需创建 `CoinStore`，收 **存储押金**（删除时退回） |
+| "凭空增发" | 合约逻辑错误即可发生 | **编译期就禁止**（线性类型） |
+
+APT 原生余额查的就是 `0x{user}::0x1::coin::CoinStore<0x1::aptos_coin::AptosCoin>` 这个 key。2024 起新稳定币（USDT / USDC）已迁到 `0x1::fungible_asset` 标准，记账单元变为 `FungibleStore`，但"余额=账户下的 Resource"这个语义不变。
+
+**转账 = 调用 Move entry function**（没有特殊的"转账指令"）：
+
+```
+EntryFunction: 0x1::aptos_account::transfer(to, amount)
+   │
+   ├─ ensure_account_exists(to)                              // 目标账户不存在就创建
+   ├─ coin::register<AptosCoin>(to) if needed                // 没 CoinStore 就建
+   ├─ let c = coin::withdraw<AptosCoin>(&sender_signer, amt) // 从 sender CoinStore 取线性 Coin
+   └─ coin::deposit<AptosCoin>(to, c)                        // merge 进 receiver CoinStore
+```
+
+授权模型的根是 **`&signer`**：它只能由 VM 在 Tx 入口根据 `sender` 字段注入，不可伪造、不可复制；合约永远不能替用户签名，只能被"用户带着 signer 调用"。转账的读写集典型是 `{sender/CoinStore, to/CoinStore, sender/Account.seq}`——这也正是 Block-STM 用来判断并发冲突的 key。
+
+**合约调用的端到端路径（§2.2 + §3.3）**：
+
+1. SDK 构造 Tx（`sender / seq / payload(EntryFunction|Script) / gas`）+ 签名
+2. REST 提交 → shared mempool → Quorum Store 打 batch
+3. Jolteon 共识 2 轮 QC 定序
+4. Block-STM 并行执行
+5. AptosDB / Jellyfish Merkle 写状态
+
+VM 执行时：**Prologue** 校验签名 / `tx.seq == account.seq` / gas 可预付；**Body** 解释 bytecode，`move_to / move_from / borrow_global_mut` 是 Block-STM 记录读写集的唯一入口；**Epilogue** 结算 gas、`sequence_number += 1`（**即使 Tx abort 也会 +1 并扣 gas**，与 EVM 相同）。
+
+### Q2：§2.3 里提到的 Quorum Store 具体原理是什么？如何做到 mempool 与共识解耦？
+
+核心思想来自 [Narwhal](https://arxiv.org/abs/2105.11827)：**传播数据**与**定序数据**是两个可以独立并行的子问题，把它们合在同一条消息里做，就是 Leader 带宽瓶颈的根源。
+
+**原来的瓶颈**——HotStuff / DiemBFT 是 Leader-broadcast 模式，Leader 打包完整 Tx 广播给所有 validator，上行带宽 = `N × |tx| × (n−1)` 全压在 Leader 单机上，follower 上行完全空转，块大小与共识延迟强耦合。
+
+**Quorum Store 的三条规则**：
+
+1. **每个 validator 都当数据源**——并行打 batch、并行广播、并行收签名。集群聚合上行带宽 ≈ n × Leader 单机上行。
+2. **共识只流转"数据收据"**（Proof of Store, ~200B），Tx 数据不进共识消息。
+3. **只要 PoS 成立，执行时一定拉得到数据**——因为 PoS 证明至少 f+1 诚实节点已持久化 batch。
+
+**Batch 与 PoS 构造过程**：
+
+```
+Batch { author, epoch, batch_id, expiration, txns, digest }
+
+Validator A                        Validators B..N
+───────────                        ─────────────────
+1. 按 gas price 选 Tx 打 batch
+2. 本地持久化 → 广播     ────────►  3. 校验 + 持久化
+                                    4. 对 digest BLS 签名返回
+5. 聚合 2f+1 stake-weighted 签名
+   → ProofOfStore {
+       digest, expiration, author,
+       aggregated_sig
+     }
+```
+
+PoS 的核心定理（承袭 Narwhal）：**2f+1 签名里至多 f 个 byzantine，剩下的 f+1 诚实节点必定已落盘**——这是 Leader 后续只引用 digest 的安全基础。`expiration` 是经济机制：过期后诚实节点可 GC，避免 batch 数据永久占存储。
+
+**Leader 提案的块体几乎没有 Tx**：
+
+```
+Block {
+    round, epoch, author, parent_qc,
+    payload: Vec<ProofOfStore>,    // ← 一堆引用
+}
+```
+
+块体压缩比约 **1000×**（一条 PoS ≈ 200B，承载数百到数千条 Tx）。Validator 投票前只校验 PoS 聚合签名合法、未过期、未被前序块引用过——**不需要看 Tx 数据内容**。
+
+**执行阶段按引用回填**：
+
+```
+for pos in block.payload:
+    batch = local_batch_store.get(pos.digest)
+    if batch is None:
+        batch = fetch_from_peers(pos)    // f+1 诚实节点必有
+    execute_batch(batch)                 // 交给 Block-STM
+```
+
+**解耦映射表**：
+
+| 解耦维度 | 原模型 | Quorum Store |
+| --- | --- | --- |
+| 数据传播 vs 定序 | 同一消息 | 两套独立子协议 |
+| 带宽利用 | Leader 单点 | n 节点并行 |
+| 块大小 ↔ 延迟 | 强耦合 | 解耦（块只装 digest） |
+| 共识消息复杂度 | O(n·\|block\|) | O(n·\|digest set\|) |
+| Leader 切换成本 | 重广播 mempool 视图 | 复用已有 PoS 队列 |
+| Mempool 角色 | 共识直接消费 | **退化为 QS 的上游缓冲池**，共识完全不看它 |
+
+Aptos Labs 实测纯共识层 **12× TPS**、端到端 **3× TPS** 提升。实现位于 `consensus/src/quorum_store/`，作为 on-chain config 可关（灰度上线用过此开关）。
+
+**血缘**：Quorum Store ≈ Narwhal 的 batch+certificate 数据层 + Jolteon 线性定序。Sui 走 Mysticeti 全 DAG 路线（数据+定序一体），Aptos 只吸收数据层，不吸收 DAG 定序——因为 Block-STM 的"按块内 idx 严格串行等价"前提不兼容 DAG 式拓扑定序。
+
+### Q3：每个 validator 并行打 batch，不同 batch 里可能有相同的 Tx，这种情况怎么处理？
+
+**Aptos 的选择：允许重叠发生，分层削减**。理由是强互斥需要 validator 间事先协商"谁打哪一片"，会把 Quorum Store 再次退化成需协调的子协议，违背"n 个并行数据源"的初衷。取而代之是 4 层兜底：
+
+**L1 — Mempool 侧的概率错峰**
+
+每条 Tx 在 mempool 里带 `ready_time` 与 `broadcast_peers`。`BatchGenerator` 抽 Tx 时：
+
+- 优先抽本节点直接从客户端收到的 Tx（primary source）
+- 对从 peer 收到的 Tx 加小延迟（让原始来源节点先打）
+
+概率性降低期望重叠率，不是硬保证。
+
+**L2 — PoS 队列按 TxnSummary 去重**
+
+`BatchProofQueue`（`consensus/src/quorum_store/batch_proof_queue.rs`）对入队的每个 PoS 解析 batch 里每条 Tx 为：
+
+```
+TxnSummary { sender, replay_protector (= seq), hash, expiration }
+```
+
+去重单元是 `(sender, replay_protector, hash)`——与装在哪个 batch 无关。Leader 在 `ProofManager::pull_proofs()` 组装 block payload 时：
+
+1. 按 `(gas_bucket DESC, batch_id DESC)` 扫 PoS 队列（高 gas 优先、新 batch 优先，保证确定性）
+2. 每个 PoS 的**有效条数** = `txn_count − 已在更早选中 PoS 里出现过的 txn 数`
+3. 按有效条数占 block payload 预算
+4. 重叠 100% 的 PoS 有效条数 = 0 → 被跳过
+
+**L3 — 跨 block 的 committed / pending 排除**
+
+ProofManager 还维护 `committed_txn_summaries`（近期已提交）和 `pending_proposed_txn_summaries`（已进 pipeline 但未提交）。过滤管线：
+
+```
+candidate_pos_queue
+  .filter(not in committed_txn_summaries)
+  .filter(not in pending_proposed_txn_summaries)
+  .dedup_by(txn_summary)
+  .take(payload_budget)
+```
+
+诚实 Leader 下，同一笔 Tx 至多出现在一个最终提交 block 的有效执行集合里。
+
+**L4 — 终极闸门：`sequence_number`**
+
+前三层都是"优化"，**正确性保证来自 VM prologue**：
+
+| 情况 | 结果 |
+| --- | --- |
+| `tx.seq == account.seq` | 正常执行，seq += 1 |
+| `tx.seq < account.seq`（已被副本执行） | `SEQUENCE_NUMBER_TOO_OLD`，丢弃，**不写状态** |
+| `tx.seq > account.seq` | `SEQUENCE_NUMBER_TOO_NEW`，丢弃 |
+
+即使同一笔 (Alice, seq=42) 同时被两个 PoS 引用、都进了 block：
+
+1. Block-STM 按 block 内 idx 顺序，第一个 Tx_42 成功执行，`Alice.seq` 变成 43
+2. 第二个 Tx_42 prologue 就被 `SEQUENCE_NUMBER_TOO_OLD` 拒绝，无任何 Write Set
+3. Validation 阶段也会看到读到的 `Alice.seq=43` 与期望的 42 不符，直接丢弃
+
+**边界场景**：
+
+| 场景 | 结果 |
+| --- | --- |
+| A、B batch 完全相同（同序同 Tx） | `digest` 一样 → 其实是同一个 PoS，无冗余 |
+| A、B 有 80% 重叠但尾部不同 | digest 不同；Leader 按高 gas/新 batch 选一个，另一个贡献 ≈20% 有效条数 |
+| 恶意 Leader 硬塞两个重叠 PoS | 块能过共识（PoS 本身合法），执行阶段靠 seq 淘汰重复；**攻击者只是在浪费 block 空间，无法双花** |
+| 重叠 PoS 中永远不执行的 Tx | 由 batch `expiration` GC 掉 |
+
+**一句话**：Aptos 用 4 层把"重复"从 mempool 一路削到执行层，前三层省算力、省 block 空间，最后由账户 `sequence_number` 保证账本一致性——这正是敢让 n 个 validator 并行打 batch 而不必事先协调的底气。
+
 ---
 
-*Last verified: 2026-04-22*
+*Last verified: 2026-04-25*
