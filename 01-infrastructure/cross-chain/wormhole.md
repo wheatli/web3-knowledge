@@ -197,8 +197,8 @@ $$
 
 **双共识流程**：
 1. Guardian 的链 watcher 观测源链 `LogMessagePublished`，产出 Observation；
-2. Guardian 向 Wormchain 提交 `MsgObservation`（gRPC，`x/wormhole` 模块）；
-3. Wormchain 状态机在 `DeliverTx` 中调用 `x/accountant` 的 `ProcessObservation`，校验守恒不变式：若违反直接 reject（`ErrInvariantViolation`），该 Observation 永远拿不到 Accountant 的 approve；
+2. Guardian 向 Wormchain 提交承载这些 Observation 的 Cosmos 消息 `MsgSubmitObservations`（对应 `x/wormhole` 的 handler `SubmitObservations`）；
+3. Wormchain 状态机在 `DeliverTx` 中处理 `SubmitObservations` 这笔交易，并调用 `x/accountant` 的 `ProcessObservation` 校验守恒不变式：若违反直接 reject（`ErrInvariantViolation`），该 Observation 永远拿不到 Accountant 的 approve；
 4. Wormchain 自身按 Tendermint BFT 出块，获得 Wormchain 侧超过 2/3 voting power 的 validator commit 签名后把 Observation 标记为 `approved`；
 5. Guardian 监听到 Wormchain approval 后，才把自己的 ECDSA 签名发到主 P2P Gossip，参与组装目标链 VAA。
 
