@@ -310,7 +310,7 @@ curl -X POST --data '{"jsonrpc":"2.0","id":1,"method":"eth_getTransactionReceipt
 
 **Slush（起点，无记忆）**：每轮抽 $k$ 个邻居，若 $\ge \alpha$ 同色就切换到该色；固定 $m$ 轮后停。没有计数器、没有终局信号——只能说明"当前倾向"，不能"确认接受"。
 
-**Snowflake（加 counter，给出决定点）**：一致响应则 `counter++`，不一致则清零并切换；`counter \ge \beta$ 即 finalize。提供了终局条件，但 **counter 清零太敏感**，网络抖动或攻击者轻微扰动就能让其前功尽弃，容易被 metastability 攻击拖住。
+**Snowflake（加 counter，给出决定点）**：一致响应则 `counter++`，不一致则清零并切换；$counter \ge \beta$ 即 finalize。提供了终局条件，但 **counter 清零太敏感**，网络抖动或攻击者轻微扰动就能让其前功尽弃，容易被 metastability 攻击拖住。
 
 **Snowball（加 confidence 向量，稳健化）**：为每种选择维护独立的 **累计置信度** $d(v)$（不清零，只累加），当前 preference = 置信度最高者；切换要求对手选项置信度严格超过当前。摆脱了"一有反例就归零"的过度敏感，是 Avalanche 家族的**算法基石**。`avalanchego/snow/consensus/snowball/tree.go::RecordPoll` 就是这套逻辑。
 
