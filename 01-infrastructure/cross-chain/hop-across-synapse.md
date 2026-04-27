@@ -70,7 +70,7 @@ $$
 
 **完整生命周期**（以 Optimism → Arbitrum 转 1 ETH 为例）：
 
-**① 源链进入（Optimism）**：用户调 `L2AmmWrapper.swapAndSend(destinationChainId=42161, recipient, amount=1 ETH, ...)`。合约先用 Optimism 的 h-AMM 把 1 ETH → ~1 hETH（付少量 AMM 滑点），再调 `L2_Bridge.send(...)` 销毁这 1 hETH，emit `TransferSent` 事件携带 `transferId = keccak256(chainId, recipient, amount, bonderFee, amountOutMin, deadline)`。
+**① 源链进入（Optimism）**：用户调 `L2AmmWrapper.swapAndSend(destinationChainId=42161, recipient, amount=1 ETH, ...)`。合约先用 Optimism 的 h-AMM 把 1 ETH → ~1 hETH（付少量 AMM 滑点），再调 `L2_Bridge.send(...)` 销毁这 1 hETH，并 emit `TransferSent` 事件携带 `transferId`。这里应以合约 `getTransferId(...)` 的**完整字段集合**为准（包含 `transferNonce` 等字段）；如果只从机制上理解，它可以看作对 destination chain、recipient、amount、bonder fee、`amountOutMin`、deadline 等参数生成的唯一标识，但**不能**按这里的简化示意直接复现链上 hash。
 
 > 关键点：hToken 在源链 **被销毁**（burn），在目标链 **被 Bonder 铸造/释放**（mint）。总供应的 1:1 平衡由 L1 Bridge 托管的 canonical 资产担保。
 
