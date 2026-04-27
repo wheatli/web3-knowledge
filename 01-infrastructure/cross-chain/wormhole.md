@@ -199,7 +199,7 @@ $$
 1. Guardian 的链 watcher 观测源链 `LogMessagePublished`，产出 Observation；
 2. Guardian 向 Wormchain 提交 `MsgObservation`（gRPC，`x/wormhole` 模块）；
 3. Wormchain 状态机在 `DeliverTx` 中调用 `x/accountant` 的 `ProcessObservation`，校验守恒不变式：若违反直接 reject（`ErrInvariantViolation`），该 Observation 永远拿不到 Accountant 的 approve；
-4. Wormchain 自身按 Tendermint BFT 出块，集齐 Wormchain 侧 2/3 validator 签名后把 Observation 标记为 `approved`；
+4. Wormchain 自身按 Tendermint BFT 出块，获得 Wormchain 侧超过 2/3 voting power 的 validator commit 签名后把 Observation 标记为 `approved`；
 5. Guardian 监听到 Wormchain approval 后，才把自己的 ECDSA 签名发到主 P2P Gossip，参与组装目标链 VAA。
 
 换句话说，攻击者即便攻破了某条目标链的 Core Bridge（能让那条链 `parseAndVerifyVM` 接受伪造 VAA），只要他不能同时伪造源链的 lock 事件，Wormchain 上的 `locked` 不会增加，Guardian 就不会为 `minted` 增量签名，伪 VAA 根本组装不出 13/19 签名——这是对 2022 Solana 事件类攻击的**结构性封堵**。
