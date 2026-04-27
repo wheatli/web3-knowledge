@@ -4,7 +4,7 @@ module: 01-infrastructure/cross-chain
 priority: P0
 status: DRAFT
 word_count_target: 5000
-last_verified: 2026-04-22
+last_verified: 2026-04-27
 primary_sources:
   - https://docs.layerzero.network/v2
   - https://layerzero.network/publications/LayerZero_Whitepaper_V2.0.1.pdf
@@ -158,15 +158,62 @@ ASCII 结构图：
 
 ## 3. 架构剖析
 
-### 3.1 分层视图
+### 3.1 设计哲学与分层视图
+
+**一句话架构观**：把"跨链桥"从"整条价值数十亿的巨型合约"拆成"**永不升级的最小入口 + 可拔插的验证集 + 外部执行者**"，让应用方按自身风险偏好组装信任栈。这是对"桥作为单一共享 TCB"范式的直接反抗。
 
 LayerZero v2 协议栈自顶向下：
 
-1. **应用层（OApp / OFT / ONFT）**：业务合约继承 `OApp`/`OFT` 基类，调用 `_lzSend` 发送、覆写 `_lzReceive` 处理消息。
-2. **Endpoint 层**：每链唯一、不可升级的"信任入口"。
+1. **应用层（OApp / OFT / ONFT）**：业务合约继承 `OApp` / `OFT` 基类，调用 `_lzSend` 发送、覆写 `_lzReceive` 处理消息。
+2. **Endpoint 层**：每链唯一、**不可升级**的"信任入口"。
 3. **Message Library 层（ULN）**：Packet 编码、费用收取、DVN 阈值管理。可按 OApp 粒度替换。
-4. **DVN / Executor 层**：链下 workers + 目标链 Verifier/Executor 合约。
+4. **DVN / Executor 层**：链下 workers + 目标链 Verifier / Executor 合约。
 5. **P2P / 链下层**：DVN 各自维护的监听节点，通过各自选定的方式读源链（RPC / Light Client / ZK Prover）。
+
+**架构全景（发送 → 验证 → 执行）**：
+
+```
+─────────────────────────── 源链 A ─────────────────────────
+           OApp.send()                   [应用层]
+                │
+                ▼
+┌─────────────────────────┐
+│  Endpoint (不可升级)     │  ──────  每链仅 1 份，信任根
+└─────────────┬───────────┘
+              │ 委托
+              ▼
+┌─────────────────────────┐
+│  SendUln302 (可替换)     │  按 OApp 配置读 DVN 列表、收费
+└────┬────────┬──────┬────┘
+     │        │      │
+     ▼        ▼      ▼
+emit PacketSent → 被链下 worker 监听
+    ├─ DVN₁ (Google Cloud)
+    ├─ DVN₂ (Polyhedra zk)
+    ├─ DVN₃ (LayerZero Labs)
+    └─ Executor
+
+═══ 链下：各 DVN 各自读源链、等 Confirmations、生成 packetHash ═══
+
+─────────────────────────── 目标链 B ────────────────────────
+    ReceiveUln302.commitVerification()  各 DVN 独立上链 attest
+              │
+              │ required 全满足 ∧ optional ≥ k
+              ▼
+    Endpoint.verify() ← 记录 payloadHash 已 verified
+              │
+              ▼
+    Executor.lzReceive(packet) ← 任何人都可触发
+              │
+              ▼
+    OApp.lzReceive() ← 业务逻辑
+```
+
+**三个关键架构决策**：
+
+1. **Endpoint 不可升级**——所有逻辑变更通过替换下游 Library 实现。这避免了"升级 key 被盗 → 整个桥被替换"的最大单点风险（Ronin、Nomad 事件正是这一类的变种）。Library 替换是 **per-OApp 的**，不影响其他应用。
+2. **DVN ≠ Executor**——v1 的 Oracle 和 Relayer 两角色模糊，存在合谋打包审查消息的可能；v2 严格分离，DVN 只签名、Executor 只调用。Executor 即使全部离线，**任何人都能在目标链手动调用 `endpoint.lzReceive` 推进**——不存在"消息卡死在桥上"的场景。
+3. **Packet 结构里 `sender/receiver` 用 `bytes32` 而非 `address`**——为 Solana / Aptos / Move 系统预留地址宽度，是"全链"而非"EVM 跨链"的语言层决策。
 
 ### 3.2 核心模块清单
 
@@ -345,11 +392,47 @@ npx hardhat lz:oapp:send \
 
 ## 7. 安全与已知攻击
 
-- **Sonne Finance 事件（2024-05）**：非 LayerZero 协议漏洞，而是其上构建的借贷协议合约漏洞；说明"LayerZero 安全≠应用安全"。
+LayerZero 的安全模型可压缩成一个不等式（§2.1 已形式化）：Required 全签 + Optional X-of-Y——这就是 **X-of-Y-of-N 阈值模型**。但"配得正确"才是实际安全性的前提。本节拆解 **协议层提供了什么 + 应用层必须做什么**。
+
+### 7.1 协议层的七道纵深防线
+
+1. **Endpoint 不可升级（最小化信任根）**——合约一旦部署没有 admin / proxy / upgrade key，把"桥被盗"的最大入口（升级 key 管理）从协议层完全拿掉。逻辑升级落到下游 Library，而 Library 替换是 per-OApp 的，不传染其他应用。
+2. **DVN 独立异构（抗合谋）**——每个 DVN 用**不同技术栈读源链**：有人跑全节点、有人跑 Light Client、有人用 zk proof（Polyhedra / Succinct）。异构化让"攻破一个 DVN 的实现 bug"不会传染其他 DVN。截至 2026 Q1 主流 OApp（Stargate / PancakeSwap / Ethena）默认 **2-of-3 DVN** 或更严。
+3. **Required + Optional 分层阈值**——双层结构能同时表达"必须经过我信任的机构（合规 / 风控 DVN）"与"还要经过一群独立验证者达成 X 票"。表达力强于 Wormhole 的 13/19 扁平 Guardian、Axelar 的 Tendermint 验证者集。
+4. **Confirmations 防源链重组**——DVN 收到 `PacketSent` 后不会立刻 attest，而是等待 OApp 配置的源链 `Confirmations`（Ethereum 默认 15 块 ≈ 3 分钟）。合并后 Ethereum 深度 > 12 的重组理论上已不可能。
+5. **Nonce 单调 + GUID 全局唯一（防重放）**——`outboundNonce[sender][dstEid][receiver]` 严格递增；`GUID = keccak256(nonce, srcEid, sender, dstEid, receiver)` + 目标 Endpoint 维护已消费集合。默认有序通道语义，Tx_N 必须在 Tx_N-1 之后执行；无序 lzCompose 是显式选择。
+6. **Pre-Crime 主动模拟**——LayerZero Labs DVN 的特色机制：在 attest 之前用 fork-simulation 跑一遍 `lzReceive`，若模拟触发 revert / 黑名单 / 异常状态变更，就**拒绝 attest**，消息永久 stuck。把"消息已进 Endpoint 但会把目标合约打爆"的攻击面在上链前堵掉。代价：只有特定 DVN 实现，非协议强制，且有误伤合法交易的风险。
+7. **验证 / 执行分离 + 执行兜底**——DVN 阈值达成后，Executor 离线也不影响最终可达——**任意地址可手动调 `endpoint.lzReceive` 推进**。这比 Wormhole 早期"Guardian 签完但 VAA 没人 relay"要好得多。
+
+### 7.2 应用层责任矩阵：可配置信任的代价
+
+LayerZero 的设计是"协议只给机制，策略交给应用"。**应用配错，协议帮不上忙**：
+
+| 风险 | 来源 | 典型后果 |
+| --- | --- | --- |
+| 默认 1-of-1 DVN | OApp 未显式 `setConfig` | 退化为单点信任，等于中心化桥 |
+| Required DVN 全被攻破 | 应用选的 DVN 恰好全部作恶 | 伪造消息，协议无兜底（设计如此） |
+| 应用 `lzReceive` 逻辑漏洞 | OApp 自身代码 | 收到合法消息但自己处理错误（如 Sonne Finance 2024-05） |
+| 目标链共识被攻击 | 非 LayerZero 范畴 | 无论什么桥都扛不住 |
+
+因此真实安全性 = **min(协议机制, 应用配置, 应用合约代码)**。协议机制侧经 Zellic / OpenZeppelin / Trail of Bits 审计已相当稳固，历史事故几乎都来自后两者。
+
+### 7.3 已知事件与审计
+
+- **Sonne Finance 事件（2024-05）**：非 LayerZero 协议漏洞，而是其上构建的借贷协议合约漏洞；典型地印证了"LayerZero 安全 ≠ 应用安全"。
 - **配置错配风险**：若应用部署时未显式 `setConfig`，使用默认 1-of-1（LayerZero Labs DVN），属于单点信任。**Stargate、PancakeSwap 等主流 OApp 均已迁移至 2-of-3 DVN**。
-- **Pre-Crime（主动防御）**：LayerZero Labs DVN 会模拟执行 `lzReceive`，若目标合约 revert 或触发黑名单则拒绝 attest。但 Pre-Crime 只能由特定 DVN 实现，不是协议强制。
 - **理论攻击面**：Required DVN 全部被攻破；Executor 拒绝执行（用户自救：任何地址可调用 `lzReceive`）；目标链共识被攻击（不属于 LayerZero 范畴）。
 - **审计**：Zellic、OpenZeppelin、Trail of Bits 均审计过 v2；报告见 `LayerZero-v2/audit` 目录。
+
+### 7.4 实战配置建议（写或审 OApp 时）
+
+1. **永远显式 `setConfig`**——不要用 Endpoint 默认（= LayerZero Labs 1-of-1，仅部署测试用途）。
+2. **Required 至少 1 家 + Optional X-of-Y 至少 2-of-3**——这是主流 OFT 的最低档。
+3. **至少 1 个 DVN 选择 zk 路线**（Polyhedra / Succinct）——信任假设不依赖委员会，只依赖源链共识 + ZK SNARK 正确性。
+4. **目标 `lzReceive` 加强幂等性**——即使协议保证 GUID 不重放，也要防御"消息合法但 payload 有害"的场景（Pre-Crime 不一定部署）。
+5. **监控 `Confirmations` 配置**——从其他桥迁移时别照抄；不同源链的 finality 语义差别巨大（Ethereum 合并后 vs Arbitrum L1 vs Solana）。
+
+**一句话总结**：LayerZero v2 的本质是把桥拆成"极小不可升级入口 + 可插拔验证集 + 独立执行者"，**把信任选择权下放到应用**。安全性不是"协议设定的固定等级"，而是"应用配出来的具体等级"——这既让它能在 80+ 链上以相同机制运行，也让它的每一次事故几乎都能追溯到"应用配错"而非"协议失守"。安全光谱的另一端是 IBC / Avalanche Warp，信任模型由协议固定、应用无选择也无失误空间；两种路线各有其合理的适用域。
 
 ## 8. 与同类方案对比
 
@@ -387,4 +470,4 @@ npx hardhat lz:oapp:send \
 
 ---
 
-*Last verified: 2026-04-22*
+*Last verified: 2026-04-27*
