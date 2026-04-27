@@ -220,7 +220,7 @@ struct ChainPath {
 
 **安全论证**：
 - 消息层信任继承自 LayerZero v2 DVN 配置（Stargate 通常要求 Google Cloud + LayerZero Labs DVN + Stargate 自己的 DVN，3/3 或 m/n 门限）。DVN 失守 = Stargate 失守，这是无法回避的上游依赖。
-- 经济不变式：`Σ_chains totalLiquidity == Σ user LP shares × share price`。Delta 再平衡只在车道之间搬 balance，总流动性只随 LP mint/burn 变化——保证了 LP 份额始终可赎回。
+- 经济不变式：`Σ_chains totalLiquidity == Σ user LP shares × share price`。这里说的是**跨所有链汇总后的总价值/总流动性**只会因 LP mint/burn 改变；前文 swap / credit 里对 `totalLiquidity` 的加减，指的是**单链 / 单池 / 单车道的记账量**随资金迁移而变化，而不是全局总额被凭空增减。Delta 再平衡本质上只是在车道之间搬 balance，因此不会破坏 LP 份额的整体可赎回性。
 - 失败模式：某条车道长期单向流出（A→B 大量用户、B→A 几乎没有）会耗尽该车道 balance，**新请求被拒绝**而非让 LP 亏本。表现为"暂时路径不可用"，用户体验不佳但资金安全。
 
 ### 2.3 子机制详解
