@@ -212,7 +212,7 @@ $$
 3. **Guardian 共谋伪造 Wormchain 状态**：仍然是 13/19 信任假设的延伸，没有比 Guardian 本身更强的假设。
 4. **通用消息**：不经 Accountant；若应用自行实现 mint/burn 语义需自己做守恒。
 
-核心代码：`wormchain/x/accountant/keeper/msg_server.go:SubmitObservations` → `handleObservation` → `CommitPendingTransfer`（approve）或返回 `ErrInvariantViolation`（reject）。合约侧的 `GlobalAccountant` wrapper 见 `ethereum/contracts/`。
+核心代码：前文流程图中的 `MsgObservation`，在 Wormchain 侧对应进入 `wormchain/x/accountant/keeper/msg_server.go:SubmitObservations`，随后调用 `handleObservation` → `CommitPendingTransfer`（approve）或返回 `ErrInvariantViolation`（reject）。合约侧的 `GlobalAccountant` wrapper 见 `ethereum/contracts/`。
 
 #### 2.7.3 两层叠加的威胁模型
 
