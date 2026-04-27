@@ -4,7 +4,7 @@ module: 01-infrastructure/cross-chain
 priority: P0
 status: DRAFT
 word_count_target: 5000
-last_verified: 2026-04-22
+last_verified: 2026-04-27
 primary_sources:
   - https://docs.wormhole.com/
   - https://github.com/wormhole-foundation/wormhole
@@ -81,10 +81,10 @@ payload          bytes    // 应用 payload
 19 个机构分别运行 `wormhole/node`（Go）。每个节点连接所有 35+ 条链的 RPC，订阅 Core Bridge 事件，按 `consistencyLevel` 等待 finality，对 Observation 签名并通过 **Gossip 网络**（libp2p）广播；收到 13+ 签名后组装 VAA 并通过公共 API 公开。
 
 **(3) Governor（限额熔断）**
-2022 事件后新增的链下模块（`node/pkg/governor`）。按 `(chain, token)` 设置每日美元限额（例如 Ethereum WETH 每日 $1M）。超出限额的 VAA 被 Guardian 延迟签名 24 小时，期间治理可介入。这是**速率限制型熔断**。
+2022 事件后新增的链下模块（`node/pkg/governor`）。按 `(chain, token)` 设置每日美元限额（例如 Ethereum WETH 每日 $1M）。超出限额的 VAA 被 Guardian 延迟签名 24 小时，期间治理可介入。这是**速率限制型熔断**。详见 §2.7。
 
 **(4) Accountant（账本守恒）**
-基于 Cosmos SDK 的独立区块链（Wormchain），由 Guardian 共同运行。所有 Token Bridge VAA 必须先提交到 Wormchain，Wormchain 维护每个 token 在每条链的 mint/burn 账本，任何"凭空铸造"（burn 不足却要 mint）的 VAA 被 reject。Accountant 是**全局守恒型熔断**。
+基于 Cosmos SDK 的独立区块链（Wormchain），由 Guardian 共同运行。所有 Token Bridge VAA 必须先提交到 Wormchain，Wormchain 维护每个 token 在每条链的 mint/burn 账本，任何"凭空铸造"（burn 不足却要 mint）的 VAA 被 reject。Accountant 是**全局守恒型熔断**。详见 §2.7。
 
 **(5) Token Bridge / NTT**
 - **Token Bridge（Portal）**：lock-and-mint 模式，源链锁原始 token，目标链铸造 Wrapped。
@@ -141,6 +141,91 @@ sequenceDiagram
     AppDst->>CoreDst: parseAndVerifyVM(vaa)
     CoreDst-->>AppDst: valid → execute payload
 ```
+
+### 2.7 Governor 与 Accountant 深入
+
+2022 年 Solana 事件的根因是单点智能合约漏洞直接绕过 Guardian 共识铸造 120k wETH。事后 Wormhole 不再只依赖 "19 Guardian 一层签名"，而是在**签名生成环节**前后各加一层独立风控：链下的 **Governor** 负责速率限流，链上的 **Accountant** 负责全局守恒。两者并行运行，VAA 必须同时过关才会被最终发布。
+
+#### 2.7.1 Governor（链下速率熔断）
+
+Governor 代码在每个 Guardian 节点内部运行（`node/pkg/governor/`），**不是链上合约**。它在 Guardian 准备对 Observation 签名时切入，决定"立即签"、"延迟签"还是"进入人工审核队列"。覆盖范围目前是 **Token Bridge 转账**（`flow_cancel_tokens.go` 中定义的白名单 token）——不覆盖任意 `publishMessage` 消息。
+
+**两维度限额**：
+
+| 维度 | 参数 | 行为 |
+| --- | --- | --- |
+| per-(chain, token) 24h 总量 | `dailyLimit`（USD，例 Ethereum 上某 token ≈$50M/day） | 按 `(sourceChain, token)` 维度在滑动 24h 窗口累计 outbound notional；超出后续 VAA 进入 `pending`，累计回落到阈值以下后自动放行 |
+| 单笔大额 | `bigTransactionSize`（例 Ethereum ≈$7M） | 单笔超阈值直接 `enqueued`，默认等待 24 小时由 Guardian 自动释放；期间可被治理拦截 |
+
+**定价通路**：Guardian 配置中为每个 `(chain, token)` 预置 `floorPrice`（硬编码低位保护价），并订阅 Coingecko 实时报价，签名时使用 `max(spotPrice, floorPrice)`——这是针对"价格预言机被砸到 0 就能把攻击总额折算成 $0，绕过日限额"这一威胁的显式防御（见 `token_list.go`）。
+
+**Flow cancel（2024 引入）**：回流方向的 inbound 转账可**部分冲销**该 (chain, token) 的日累计，避免一条合法的大额双向调仓被误拦。只对少量稳定币白名单启用，防止攻击者用伪造 inbound 洗掉 outbound 额度。
+
+**人工通道**：通过 **Governor Action VAA**（特殊 payload，13/19 Guardian 签名）可提前释放某条被 enqueued 的 VAA，或把某 token/chain 直接冻结。因此 Governor 不是硬熔断，而是给治理层留出 24h 响应窗口的**缓冲带**。
+
+**局限**：
+1. 只在 Guardian 签名前生效——若攻击者直接伪造 VAA 绕过 Guardian 共识，Governor 形同虚设（这种场景由 Accountant 接管）。
+2. 只覆盖 Token Bridge；NTT 用合约内 `NttManager` 自带的 inbound/outbound rate limiter（`RateLimiter.sol`），通用消息无 Governor。
+3. 链下配置的热更新依赖 Governance VAA，19 节点观测不一致时会出现短暂的 "5 签了 / 8 没签"分裂，需要通过共识自然收敛。
+
+核心路径：`node/pkg/governor/governor.go:ProcessMsgForTime` → 计算 `notionalValue` → 查 `chainEntry` 日累计 / `bigTransactionSize` → enqueue 或放行 → `CheckPending` 定时重扫释放。
+
+#### 2.7.2 Accountant（链上全局守恒）
+
+Accountant 部署在独立的 Cosmos SDK 链 **Wormchain**（对外品牌 Gateway）。Wormchain 的 validator set 与 Guardian set **一一对应**——19 个 Guardian 各运行一个 Tendermint validator，stake 名义存在但不是安全来源，安全完全来自 Guardian 集合本身。换句话说，Wormchain 是 Guardian 共享的一个**带共识的链下状态机**，用来记账。
+
+**两套并列 Accountant**：
+
+| 模块 | 上线 | 覆盖 | 代码 |
+| --- | --- | --- | --- |
+| Global Accountant | 2023 Q1 | Token Bridge (Portal) lock-and-mint | `wormchain/x/accountant` |
+| NTT Accountant | 2024 Q2 | NTT burn-and-mint | 同模块，独立 namespace |
+
+**守恒不变式**：对每个 origin asset `(originChain, originToken)`，Accountant 维护从该 origin 流向所有其他链的转账账本。Token Bridge 的不变式（lock-and-mint 语义）：
+
+$$
+\text{locked}(\text{origin}, \text{token}) \;=\; \sum_{c \ne \text{origin}} \text{minted}(\text{origin}, \text{token}, c)
+$$
+
+NTT 的不变式（burn-and-mint，无 home chain）：
+
+$$
+\sum_{c} \text{burned}(c, \text{token}) \;=\; \sum_{c} \text{minted}(c, \text{token})
+$$
+
+每笔 VAA 都被建模为账本上的**原子记账项**：`A→B` 的转账等价于 "A 上 locked/burned +amount, B 上 minted +amount"；目标链上的 `completeTransfer` 再被 observer 上报为 "B 上 minted 被消费，用户余额 +amount"。任何让某个 `minted[c]` 变负、或让 $\sum \text{minted} > \text{locked}$ 的记账项都违反不变式。
+
+**双共识流程**：
+1. Guardian 的链 watcher 观测源链 `LogMessagePublished`，产出 Observation；
+2. Guardian 向 Wormchain 提交承载这些 Observation 的 Cosmos 消息 `MsgSubmitObservations`（对应 `x/wormhole` 的 handler `SubmitObservations`）；
+3. Wormchain 状态机在 `DeliverTx` 中处理 `SubmitObservations` 这笔交易，并调用 `x/accountant` 的 `ProcessObservation` 校验守恒不变式：若违反直接 reject（`ErrInvariantViolation`），该 Observation 永远拿不到 Accountant 的 approve；
+4. Wormchain 自身按 Tendermint BFT 出块，获得 Wormchain 侧超过 2/3 voting power 的 validator commit 签名后把 Observation 标记为 `approved`；
+5. Guardian 监听到 Wormchain approval 后，才把自己的 ECDSA 签名发到主 P2P Gossip，参与组装目标链 VAA。
+
+换句话说，攻击者即便攻破了某条目标链的 Core Bridge（能让那条链 `parseAndVerifyVM` 接受伪造 VAA），只要他不能同时伪造源链的 lock 事件，Wormchain 上的 `locked` 不会增加，Guardian 就不会为 `minted` 增量签名，伪 VAA 根本组装不出 13/19 签名——这是对 2022 Solana 事件类攻击的**结构性封堵**。
+
+**可用性代价**：Wormchain 是 BFT 链，超过 1/3 Guardian 离线即停机，Token Bridge / NTT 消息全线阻塞（通用 `publishMessage` 不走 Accountant，不受影响）。Wormhole 显式选择**安全优先于可用性**。
+
+**仍然防不住的攻击面**：
+1. **源链 token 合约被 admin 无限铸造**：Accountant 只守恒 bridge 内账本，若源链 USDC 发行方自己增发，bridge 看到的 `locked` 会等比例放大，wrapped 侧照常 mint——需要上游信任。
+2. **Wormchain 自身漏洞**：Cosmos SDK + 自定义模块构成新的攻击面，由 OtterSec 等多轮审计覆盖。
+3. **Guardian 共谋伪造 Wormchain 状态**：仍然是 13/19 信任假设的延伸，没有比 Guardian 本身更强的假设。
+4. **通用消息**：不经 Accountant；若应用自行实现 mint/burn 语义需自己做守恒。
+
+核心代码：前文流程图中的 `MsgObservation`，在 Wormchain 侧对应进入 `wormchain/x/accountant/keeper/msg_server.go:SubmitObservations`，随后调用 `handleObservation` → `CommitPendingTransfer`（approve）或返回 `ErrInvariantViolation`（reject）。合约侧的 `GlobalAccountant` wrapper 见 `ethereum/contracts/`。
+
+#### 2.7.3 两层叠加的威胁模型
+
+| 攻击类型 | Governor 能否拦截 | Accountant 能否拦截 |
+| --- | --- | --- |
+| 某目标链 Core Bridge 漏洞伪造 VAA（2022 型） | 否（VAA 不经 Guardian 签名） | **能**（伪造 mint 无对应 locked） |
+| Guardian 私钥批量泄露（≥13） | 否 | 否（Guardian 也控制 Wormchain） |
+| 单个 token 价格预言机被操纵 | **能**（floor price 保护日限额） | 部分（不直接用价格，但限额绕过仍有价值） |
+| 合法但异常的大额转账 | **能**（24h 延迟 + 人工审核） | 否（守恒成立即放行） |
+| 源链原始 token 合约恶意增发 | 否 | 否（上游信任问题） |
+| 通用 `publishMessage` 攻击 | 否（不覆盖） | 否（不覆盖） |
+
+两层是**互补而非冗余**：Governor 处理"签名前看到的异常流量模式"，Accountant 处理"签名前看到的账本不一致"。2022 事件的攻击路径（伪造 VAA 绕过 Guardian 共识）只有 Accountant 能封堵；而 Accountant 无法判断"一笔合法但超常规的大额转账是否值得 24h 观察期"——这是 Governor 的职责。
 
 ## 3. 架构剖析
 
@@ -340,4 +425,4 @@ const vaa = await wh.getVaa(whm, "Uint8Array", 60_000);
 
 ---
 
-*Last verified: 2026-04-22*
+*Last verified: 2026-04-27*
