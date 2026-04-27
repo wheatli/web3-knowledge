@@ -610,6 +610,123 @@ const { deposit } = await client.executeQuote({
 | Hub-Spoke | - | Across 架构（Ethereum Hub + 各链 Spoke） |
 | 统一流动性 | Unified Liquidity | Stargate 全局一份池 |
 
+## 11. FAQ
+
+以下问题来自与学习者的真实对话。Stargate 的 `ChainPath` 与 Delta 算法是这四个桥里最容易"看代码能看懂、但问一句'为什么要这样'就卡住"的地方——原文 §2.2(4) 与 §3.4 给出了结构与流程，但没有展开**为什么不是共享池、为什么 credit 要双向流、为什么这样就能保证永不失败**。这一节用"先类比、后公式"的方式补齐直觉。
+
+### Q1：Stargate 的 ChainPath 和 Delta 机制到底在做什么？
+
+#### 直觉版：连锁便利店 + 专属货道
+
+把 Stargate 想成一家在每条链上都开了分店的**连锁便利店**,卖的商品是 USDC。每家分店都囤着 USDC 库存。
+
+**核心难题**：Arbitrum 分店的钱不能直接在 Optimism 分店兑付——它们物理上隔开,只能通过跨链消息对账。怎么让用户"在 Arb 存钱、到 Opt 取钱"而**永远不会卡住**?
+
+**ChainPath = 专属货道**。Stargate 不把每家店的库存当作"一个大池子",而是拆成很多条**专属货道**:
+
+- Arb 分店里有一条货道写着"**这笔钱专门留给从 Opt 打过来的用户取**"(`balance`)
+- Opt 分店里也有一条货道写着"**这笔钱专门留给从 Arb 打过来的用户取**"
+
+每条货道独立记账。**一家分店的总库存 = 它所有货道的 balance 之和**,没有"通用零钱"——这是理解 Stargate 的第一个反直觉点。
+
+**IGF (Instant Guaranteed Finality) = 发货前先验库存**。用户在 Arb 下单转 1 万 USDC 到 Opt 之前,Arb 合约**先查**:"Opt 分店那条'给 Arb 来客'的货道,balance 还有 1 万吗?"
+- 够 → 放行
+- 不够 → **交易直接 revert,根本发不出去**
+
+这就是 Stargate 与 Multichain 式桥最大的区别:**宁可拒绝,也不让资金悬空在路上**。老式桥的失败模式是"消息出去、目标链发现没钱、卡几天";Stargate 把这种失败**前置到源链的 revert**。
+
+**Delta = 货道之间互打欠条**。固定货道有新问题:如果大家都从 Arb→Opt 转,那条货道很快就干了,反向货道却堆着没人用的钱。
+
+Delta 的思路是**让货道之间互相开 IOU(credit)**:每笔 swap 发生时,源链除扣自己的 balance 外,还通过 LayerZero 消息告诉对端——"我这边流出偏多,按约定你那边的**反方向货道**应该多开一点配额给我"。目标链收到后,把这批 credit 加到反方向货道的 balance 上。
+
+一句话:**credit 是"我未来会把资金腾给你"的欠条,Delta 是自动算每次应开多大欠条的规则**。靠这个,单条货道的临时枯竭被分摊到全网,系统像连通器里的水自动找平。
+
+#### 专业版:数据结构、数学不变式与 Delta 算法
+
+**ChainPath 的字段语义**:
+
+```solidity
+struct ChainPath {
+  uint256 weight;        // 该车道在全池的权重
+  uint256 balance;       // 本侧可用于兑付"来自对端"用户的资金
+  uint256 lkb;           // last known balance —— 本地视角下对端池的余额镜像
+  uint256 credits;       // 本侧已发出但对端尚未确认的 credit(在途 IOU)
+  uint256 idealBalance;  // = totalLiquidity × weight / totalWeight,再平衡目标
+}
+```
+
+关键不变式:
+- **局部**:`Σ_cp balance == totalLiquidity`(本链 Pool 所有车道 balance 之和 = 本链总流动性)
+- **全局**:`Σ_chains totalLiquidity == Σ LP_shares × share_price`(LP 份额永远可赎回)
+
+**拓扑**:n 条链,每个 Pool 持有 n-1 个 ChainPath,构成一张**完全有向图**。Path 是"我→你方向的本侧预留",不是共享状态;两端各维护自己的视图,通过 LZ 消息对账。
+
+**Delta 算法的一次 swap 分解**(Arb→Opt,金额 A):
+
+源链(Arb)动作:
+```
+cp = chainPaths[Opt][USDC]
+require(cp.balance >= A)            // IGF 门禁
+cp.balance -= A
+totalLiquidity -= A
+
+// sendCredits: 计算要"推"给对端的 credit
+credits = cp.balance - cp.idealBalance   // 当前车道相对理想值过剩多少
+cp.lkb      += credits
+cp.balance   = cp.idealBalance
+totalLiquidity -= credits
+```
+
+关键巧思:credit **不是"把资金送给对端"**,而是"从源链这条 Arb→Opt 车道的过剩部分,告知对端——你可以把它计入 Opt→Arb 方向的可用 balance"。
+
+目标链(Opt)动作(收到 LZ message 后):
+```
+// 1. 先处理 creditObj —— Delta 再平衡核心
+Pool.creditChainPath(Arb, USDC, credits, idealBalance)
+  chainPaths[Arb][USDC].balance += credits
+  totalLiquidity += credits
+
+// 2. 再处理 swapObj
+chainPaths[Arb][USDC].balance -= A   // 这里用的正是刚被 credit 补充过的 balance
+transfer(to, A)
+```
+
+**Delta 的经济学本质**:Arb→Opt 的流出,在 Opt 端被**转译**为 Opt→Arb 方向车道的入账。物理资金没动,但对账配额重新分配——下次如果有人想 Opt→Arb,就有额度了。Delta 把"单点车道耗尽"的本地失败,通过 credit 的前后互借,扩散成"全局流动性围绕 idealBalance 的漂移"。
+
+参数 `lpDeltaBP` / `protocolDeltaBP`(basis point)控制每次 swap 愿意推多少 credit 出去:激进 → 再平衡快但 `lkb` 与实际差异大;保守 → 对账准但某些车道易干。
+
+**IGF 的数学表达**:
+
+$$
+\forall\ \text{swap}(src \to dst,\ A):\quad src.\text{chainPaths}[dst].\text{balance} \geq A \Rightarrow \text{accept}
+$$
+
+把"对端兑付能力"的判断**前置到源链**。代价是:某方向流量长期单向时,该车道 balance 会耗尽,新请求被 revert。用户体验是"暂时路径不可用",但资金绝对安全——**从未离开源链**。
+
+这与 Multichain 式"消息出去、目标链发现没钱、资金卡在中间"是本质不同的失败模式:**Stargate 把不可兑付转化为前置拒绝,消除了资金悬置态**。
+
+#### 为什么 v2 要拆出 Hydra / CreditMessaging?
+
+v1 里 credit 和 swap 绑在同一条 LZ 消息里——只有真实 swap 发生才能再平衡,且每条消息都要带 swap payload,gas 浪费。
+
+v2 拆出独立的 `CreditMessaging` 合约:
+- **空 credit 广播**:不带 swap,只推一条轻量 credit 消息(几百字节)
+- **再平衡不再依赖用户流量**:运营方可主动触发 credit rebalance,纠正 idealBalance 偏离
+- **TokenMessaging**(swap 专用) + **CreditMessaging**(再平衡专用) + **Pool**(账本)三层分离,消息成本可独立优化
+
+#### 与其他三个桥的定位对比
+
+| 桥 | 核心抽象 | 失败兜底 |
+| --- | --- | --- |
+| Hop / Across | 流动性 + 外部 solver (bonder/relayer) | 事后补偿,用户可能等 |
+| Synapse | 合成资产 (nUSD/nETH) burn/mint | 稳定池滑点兜底,depeg 风险 |
+| Stargate | 真·统一流动性 + 前置门禁 (IGF) | 源链直接 revert,资金从未离开 |
+
+Stargate 的代价:
+- 强依赖 LayerZero DVN 集合安全(上游信任)
+- 单向流量场景下出现"可用但拒绝"的降级
+- 合约复杂度显著高于 lock-and-mint 桥
+
 ---
 
 *Last verified: 2026-04-27*
