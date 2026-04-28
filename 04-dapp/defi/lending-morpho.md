@@ -4,13 +4,13 @@ module: 04-dapp/defi
 priority: P1
 status: DRAFT
 word_count_target: 5000
-last_verified: 2026-04-22
+last_verified: 2026-04-28
 primary_sources:
   - https://docs.morpho.org/
   - https://github.com/morpho-org/morpho-blue
   - https://github.com/morpho-org/metamorpho
   - https://github.com/morpho-org/morpho-optimizers
-  - https://morpho.org/blue-paper.pdf
+  - https://github.com/morpho-org/morpho-blue/blob/main/morpho-blue-whitepaper.pdf
 ---
 
 # Morpho（Optimizer → Blue → Metamorpho Vault）
@@ -228,6 +228,127 @@ sequenceDiagram
 
 ## 4. 关键代码 / 实现细节
 
+### 4.1 `_accrueInterest` 深度解析
+
+这是理解 Morpho Blue 记账模型最关键的一个函数。先用大白话讲清直觉，再拆细节。
+
+#### 直觉：池子 + 份额 + 懒更新
+
+Morpho Blue 本质是"一个装钱的池子"——出借人丢钱进池子，借款人押抵押品借走。协议记两个数：
+
+- `totalSupplyAssets`：池子现在值多少钱
+- `totalSupplyShares`：发行了多少"股份"
+
+每个出借人持有一定 `supplyShares`，就相当于池子的一个固定**百分比**。利息进来时，**股份数不变、池子总值上涨**，于是每股净值自动上升——所有人按持股比例共享利息，协议不需要给每个人逐个更新余额。
+
+**懒更新（lazy accrual）**：利息不是每个区块自动跳涨，而是等到有人来操作市场（存/取/借/还/清算）时，一次性把"上次到现在"这段时间的利息补算进来。没人用的市场零 gas 开销，任意时刻读到的 `totalBorrowAssets` 都是结过账的。
+
+#### 核心公式：为什么用三阶泰勒展开
+
+连续复利的精确值是 `(e^{r·t} − 1) × 本金`，但 Solidity 里 `exp()` gas 极贵。Morpho 用**三阶泰勒展开**近似：
+
+$$
+e^{rt} - 1 \approx rt + \frac{(rt)^2}{2} + \frac{(rt)^3}{6}
+$$
+
+现实场景中 `r·t` 极小（典型日化 `rt ≈ 3×10⁻⁴`），截断余项 `(rt)⁴/24` 落在 WAD（1e-18）精度之外，完全可忽略。而且**截断误差永远偏小**（扔掉的都是正项），所以协议"少记一丢丢利息"——这是有意为之的保守记账，绝不会凭空制造坏账。
+
+#### Fee 的"铸股稀释"机制
+
+直觉上 fee = "从利息里扣一块给协议"。但 Morpho 的实现更巧妙：
+
+1. **全部利息都先加进池子**（所有 supplier 的每股净值同步上涨）
+2. **协议给 `feeRecipient` 铸新股**，新股的价值正好等于 `feeAmount`
+
+等效结果是：supplier 的绝对赚幅没变（该涨还是涨），但他们的**持股比例被稀释了一点点**，稀释出来的份额就是协议 fee。好处是只用维护**一根** `totalSupplyAssets`，不像 Aave 需要 `liquidityIndex / variableBorrowIndex` 两根索引分别演进。
+
+#### 源码（`src/Morpho.sol`）
+
+```solidity
+function _accrueInterest(MarketParams memory marketParams, Id id) internal {
+    uint256 elapsed = block.timestamp - market[id].lastUpdate;
+    if (elapsed == 0) return;
+
+    if (marketParams.irm != address(0)) {
+        uint256 borrowRate = IIrm(marketParams.irm).borrowRate(marketParams, market[id]);
+        uint256 interest = market[id].totalBorrowAssets.wMulDown(borrowRate.wTaylorCompounded(elapsed));
+        market[id].totalBorrowAssets += interest.toUint128();
+        market[id].totalSupplyAssets += interest.toUint128();
+
+        uint256 feeShares;
+        if (market[id].fee != 0) {
+            uint256 feeAmount = interest.wMulDown(market[id].fee);
+            feeShares = feeAmount.toSharesDown(
+                market[id].totalSupplyAssets - feeAmount,  // ← 关键
+                market[id].totalSupplyShares
+            );
+            position[id][feeRecipient].supplyShares += feeShares;
+            market[id].totalSupplyShares += feeShares.toUint128();
+        }
+        emit EventsLib.AccrueInterest(id, borrowRate, interest, feeShares);
+    }
+    market[id].lastUpdate = uint128(block.timestamp);
+}
+```
+
+以及 `wTaylorCompounded`（`src/libraries/MathLib.sol`）：
+
+```solidity
+function wTaylorCompounded(uint256 x, uint256 n) internal pure returns (uint256) {
+    uint256 firstTerm  = x * n;                                      // r·t
+    uint256 secondTerm = mulDivDown(firstTerm, firstTerm, 2 * WAD);  // (r·t)²/2
+    uint256 thirdTerm  = mulDivDown(secondTerm, firstTerm, 3 * WAD); // (r·t)³/6
+    return firstTerm + secondTerm + thirdTerm;
+}
+```
+
+#### 细节要点
+
+**① `elapsed == 0` 早退**
+同一区块多次入口（bundler 常见）短路返回，且此时连 `lastUpdate` 写入都省掉。
+
+**② `irm == address(0)` 的合法性**
+Morpho Blue 允许创建**无息市场**（纯抵押托管，如 RWA 代币）。此时跳过利息逻辑，但仍更新 `lastUpdate` 保持早退路径有效。
+
+**③ IRM 可以有状态**
+`borrowRate()` 不是 `view`——`AdaptiveCurveIrm` 会在这里更新 `rateAtTarget`（按利用率偏离 target 的时长指数调整）。传入 IRM 的是**未累息**的 `market[id]`，避免自指。
+
+**④ 双边对称记账**
+```solidity
+totalBorrowAssets += interest;
+totalSupplyAssets += interest;
+```
+协议从不"印钱"——利息纯粹是债务端 → 权益端的记账转移。不变量 `totalSupplyAssets − totalBorrowAssets = cashReserve` 在本函数中严格保持。
+
+**⑤ Fee 铸股公式推导**
+令 `A = totalSupplyAssets`（已含 interest），`S = totalSupplyShares`，希望 `feeRecipient` 持有的 shares 恰好兑换回 `feeAmount`：
+
+$$
+\frac{\text{feeShares}}{S + \text{feeShares}} \cdot A = \text{feeAmount}
+\;\Rightarrow\; \text{feeShares} = \frac{\text{feeAmount} \cdot S}{A - \text{feeAmount}}
+$$
+
+这正是代码中 `toSharesDown(feeAmount, A − feeAmount, S)` 得到的结果——分母必须用 `A − feeAmount` 还原到"未分配 fee 时"的每股价格，否则 `feeRecipient` 会少拿。
+
+**⑥ 溢出与救援**
+`x * n` 不加 SafeMath 包装，Solidity 0.8+ 会 revert。极端（长期无交互 + 异常高利率）会导致入口函数 revert，协议可通过 1 wei 级别交互刷新 `lastUpdate` 救援。实际 `rateAtTarget` 有 `MAX_RATE_AT_TARGET` 约束，并不会失控。
+
+**⑦ `lastUpdate` 无条件末尾写入**
+即便走了 `irm == address(0)` 分支也更新，保持 `elapsed == 0` 早退语义一致；先累加后写 `lastUpdate`，事务原子性兜底防止"算了利息但没更新时间戳"的不一致。
+
+#### 与 Aave V3 / Compound V3 对比
+
+| 维度 | Morpho Blue | Aave V3 | Compound V3 |
+| --- | --- | --- | --- |
+| 索引根数 | 1 根（`totalSupplyAssets` 本身隐含净值） | 2 根（`liquidityIndex` + `variableBorrowIndex`） | 1 根 + 独立 borrow |
+| 复利方式 | 三阶 Taylor `e^{rt}−1` | Taylor（阶数不同） | 线性近似 `rt` |
+| Fee 实现 | 铸 shares 给 `feeRecipient` | `reserveFactor` 在曲线内分流 | reserves 专用账户累加 |
+| IRM 可有状态 | 是（Adaptive Curve 写存储） | 否（纯函数曲线） | 否 |
+
+把记账压到"一根 assets + 一根 shares"，fee 和利息走同一机制（shares 稀释 / 净值上涨），换来了代码极度精简和审计表面极小——这正是 Morpho Blue 敢做成**不可升级、不可治理**的前提。
+
+### 4.2 `supply`
+
 Morpho Blue supply（`morpho-blue/src/Morpho.sol:200-250`，简化）：
 
 ```solidity
@@ -249,6 +370,8 @@ function supply(MarketParams memory marketParams, uint256 assets, uint256 shares
     return (assets, shares);
 }
 ```
+
+### 4.3 MetaMorpho `reallocate`
 
 MetaMorpho reallocation（`metamorpho/src/MetaMorpho.sol` `reallocate` 函数，简化）：
 
@@ -329,7 +452,7 @@ await vault.deposit(parseUnits("10000", 6), me);
 ## 9. 延伸阅读
 
 - [Morpho Docs](https://docs.morpho.org/)
-- [Morpho Blue Paper](https://morpho.org/blue-paper.pdf)
+- [Morpho Blue Paper](https://github.com/morpho-org/morpho-blue/blob/main/morpho-blue-whitepaper.pdf)
 - [MetaMorpho Paper](https://github.com/morpho-org/metamorpho/blob/main/README.md)
 - Paul Frambot 访谈（Bankless、Epicenter）
 - Gauntlet Morpho Risk Analytics
@@ -351,4 +474,4 @@ await vault.deposit(parseUnits("10000", 6), me);
 
 ---
 
-*Last verified: 2026-04-22*
+*Last verified: 2026-04-28*
