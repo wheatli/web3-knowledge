@@ -109,6 +109,7 @@
 - [x] **DRAFT** — `02-wallet/social-recovery.md` — P2（2026-04-22, ~9.3k chars）
 - [x] **DRAFT** — `02-wallet/hardware-wallet.md` — P1（2026-04-22, ~9.7k chars）
 - [x] **DRAFT** — `02-wallet/wallet-security.md` — P0（2026-04-22, ~10.4k chars）
+- [x] **DRAFT** — `02-wallet/embedded-wallet-privy.md` — P1（2026-04-29, ~新增, SSS + AWS Nitro Enclave）
 
 ### 本次完成（2026-04-22）Wallet Batch（11 篇，共 ~116k chars）
 

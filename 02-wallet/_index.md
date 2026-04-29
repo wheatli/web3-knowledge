@@ -100,9 +100,11 @@ flowchart TD
     Shape -->|分片/门限| MPC[MPC / TSS<br/>Fireblocks/ZenGo]
     Shape -->|合约规则| SCW[Smart Contract Wallet<br/>Safe/Argent]
     Shape -->|硬件隔离| HW[Hardware Wallet<br/>Ledger/Trezor/Keystone]
+    Shape -->|SSS + TEE| WaaS[Embedded Wallet / WaaS<br/>Privy/Turnkey/Web3Auth]
 
     SCW --> AA[Account Abstraction<br/>ERC-4337 / EIP-7702]
     EOA -.7702 临时升级.-> AA
+    WaaS -.叠加 4337.-> AA
 ```
 
 ## 3. 架构剖析
@@ -165,6 +167,7 @@ flowchart TD
 | MPC | Fireblocks | 闭源 | 否 | 机构托管 >$6T 累计 |
 | MPC 消费级 | ZenGo / Coinbase WaaS | 混合 | 部分 | 快速增长 |
 | 硬件 | Ledger / Trezor / Keystone | C / Rust | 部分 | 硬件累计出货 >2000 万 |
+| Embedded / WaaS | Privy / Turnkey / Web3Auth / Magic | TS + Rust（TEE）| 部分 | 消费级 dApp 主流（Privy 2025-04 被 Stripe 收购）|
 
 **风险多样性**：若 MetaMask 出现 0-day 漏洞，Rabby / Rainbow 可立即接管——这正是"客户端多样性"的价值。反之 Ledger 2023-12 Connect Kit 供应链攻击殃及所有接入它的 dApp，说明 **基础设施级组件集中是系统性风险**。
 

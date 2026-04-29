@@ -63,7 +63,7 @@
 
 - [密码学基础](02-wallet/cryptography-basics.md) · [HD 钱包 / BIP](02-wallet/hd-wallet-bip.md)
 - [全托管（交易所）](02-wallet/custodial.md) · [自托管 EOA](02-wallet/self-custody-eoa.md) · [MPC 钱包](02-wallet/mpc-wallet.md) · [智能合约钱包](02-wallet/smart-contract-wallet.md)
-- [账户抽象（EIP-4337/7702）](02-wallet/account-abstraction.md) · [社交恢复](02-wallet/social-recovery.md) · [硬件钱包](02-wallet/hardware-wallet.md) · [钱包安全](02-wallet/wallet-security.md)
+- [账户抽象（EIP-4337/7702）](02-wallet/account-abstraction.md) · [社交恢复](02-wallet/social-recovery.md) · [硬件钱包](02-wallet/hardware-wallet.md) · [嵌入式钱包 Privy](02-wallet/embedded-wallet-privy.md) · [钱包安全](02-wallet/wallet-security.md)
 
 ### 03. 智能合约
 
