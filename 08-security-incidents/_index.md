@@ -46,17 +46,17 @@ primary_sources:
 | 子目录 | 含义 | 数量 | 典型事件 |
 |--------|------|------|---------|
 | [`cex-custodian/`](./cex-custodian/) | 中心化交易所 / 托管商（热钱包被盗、Multisig 阈值被破、内鬼） | 17 | Mt.Gox、Coincheck、FTX、DMM、**Bybit $1.46B** |
-| [`bridge/`](./bridge/) | 跨链桥（签名验证、初始化、多签密钥、IAVL proof、RPC/DVN 供应链） | 11 | Ronin、Wormhole、Nomad、BNB Bridge、Poly、**Kelp DAO $292M**、Hyperbridge |
+| [`bridge/`](./bridge/) | 跨链桥（签名验证、初始化、多签密钥、IAVL proof、RPC/DVN 供应链） | 14 | Ronin、Wormhole、Nomad、BNB Bridge、Poly、**Kelp DAO $292M**、Hyperbridge、TAC、Transit、**Verus $11M** |
 | [`defi-protocol/`](./defi-protocol/) | DeFi 协议自身逻辑/重入/编译器/流动性数学 bug | 10 | The DAO、Euler、Curve Vyper、Cetus、Penpie |
 | [`oracle-mev/`](./oracle-mev/) | 预言机闪贷操纵 / 永续合约价格 oracle | 7 | bZx、Harvest、Cream、Mango、Hyperliquid JELLY |
 | [`wallet-key/`](./wallet-key/) | 钱包 / 密钥管理 / 签名库漏洞（非 CEX 场景） | 5 | Parity Multisig、Parity Freeze、Wintermute、Atomic |
-| [`governance-admin/`](./governance-admin/) | 治理闪贷 / Admin 权限 / Mint 特权滥用 | 3 | Beanstalk、PlayDapp、Gala Games |
+| [`governance-admin/`](./governance-admin/) | 治理闪贷 / Admin 权限 / Mint 特权滥用 | 4 | Beanstalk、PlayDapp、Gala Games、**Echo Protocol $76.7M** |
 | [`supply-chain-phish/`](./supply-chain-phish/) | 前端劫持 / CDN / npm / LinkedIn 假面试 / 内鬼开发 | 7 | BadgerDAO、Ledger Connect Kit、Munchables、Radiant、**Drift $285M** |
 | [`misc/`](./misc/) | 代币坍塌 / 年度聚合 / 暂不明类别 | 2 | Mantra OM、2026 YTD |
 
 ---
 
-## 2.1 时间线完整档案（55 events）
+## 2.1 时间线完整档案（59 events）
 
 > Tier 分档：**T1** = 单笔损失 ≥ $100M 或行业级影响；**T2** = $10M–$100M 或机制新颖；**T3** = < $10M 但具代表性（新型攻击载体）。金额按事发当日 USD 计。
 
@@ -150,6 +150,10 @@ primary_sources:
 | **2026** | **Drift Protocol (Solana Perp)** | **$285M** | Supply-Chain + Key-Mgmt（DPRK 社工 → admin 签名 + durable nonce） | **T1** | [2026-drift-protocol](./supply-chain-phish/2026-drift-protocol.md) |
 | **2026** | **Hyperbridge** | **$2.5M** | Bridge / Protocol-Bug（自研 MMR 验证库 `leaf_index` 边界漏洞） | **T2** | [2026-hyperbridge](./bridge/2026-hyperbridge.md) |
 | **2026** | **Kelp DAO / rsETH (LayerZero)** | **$292M** | Bridge / Supply-Chain（单 DVN + RPC 投毒 + DDoS） | **T1** | [2026-kelp-dao](./bridge/2026-kelp-dao.md) |
+| **2026** | **TAC Protocol** | **$280万（零实损，白帽）** | Bridge / Protocol-Bug（白帽救援，10% 赏金） | **T3** | [2026-tac-protocol](./bridge/2026-tac-protocol.md) |
+| **2026** | **Transit Finance** | **$188万** | Bridge / 跨链聚合协议授权抽取（Approval Drain） | **T3** | [2026-transit-finance](./bridge/2026-transit-finance.md) |
+| **2026** | **Verus-Ethereum Bridge** | **$1100万** | Bridge / 桥验证逻辑漏洞（ETH/Verus） | **T2** | [2026-verus-ethereum-bridge](./bridge/2026-verus-ethereum-bridge.md) |
+| **2026** | **Echo Protocol（Monad）** | **$7670万** | Governance-Admin / 管理员私钥泄露 + 伪造 eBTC | **T2** | [2026-echo-protocol](./governance-admin/2026-echo-protocol.md) |
 | 2026 | YTD Notable Incidents (Q1–Q2) | 聚合（Aave $27.78M、Step Finance $27.3M、Truebit $26.2M、Resolv $25M、Rhea $18.4M 等） | 多类 | N/A | [2026-ytd-notable-incidents](./misc/2026-ytd-notable-incidents.md) |
 
 ---
@@ -182,11 +186,11 @@ primary_sources:
 | 类别 \ 年 | 2011–15 | 2016 | 2017 | 2018 | 2019 | 2020 | 2021 | 2022 | 2023 | 2024 | 2025–26 | 合计 |
 |-----------|---------|------|------|------|------|------|------|------|------|------|---------|------|
 | CEX       | 3       | 1    | 0    | 2    | 2    | 1    | 1    | 1    | 2    | 2    | 2       | 17   |
-| Bridge    | 0       | 0    | 0    | 0    | 0    | 0    | 1    | 4    | 2    | 1    | 0       | 8    |
+| Bridge    | 0       | 0    | 0    | 0    | 0    | 0    | 1    | 5    | 2    | 1    | 5       | 14   |
 | DeFi      | 0       | 1    | 0    | 0    | 0    | 3    | 2    | 1    | 2    | 1    | 6       | 16   |
 | Oracle    | 0       | 0    | 0    | 0    | 0    | 3    | 2    | 1    | 0    | 0    | 2       | 8    |
 | Wallet    | 0       | 0    | 2    | 0    | 0    | 0    | 0    | 1    | 1    | 0    | 0       | 4    |
-| Governance| 0       | 0    | 0    | 0    | 0    | 0    | 0    | 1    | 0    | 0    | 0       | 1    |
+| Governance| 0       | 0    | 0    | 0    | 0    | 0    | 0    | 1    | 0    | 2    | 1       | 4    |
 | Social-Eng| 1       | 0    | 1    | 0    | 1    | 0    | 0    | 0    | 0    | 1    | 1       | 5    |
 | Supply-Chain | 1    | 0    | 0    | 0    | 0    | 0    | 1    | 0    | 1    | 1    | 0       | 4    |
 | Key-Mgmt  | 2       | 1    | 0    | 2    | 1    | 1    | 2    | 0    | 3    | 2    | 1       | 15   |

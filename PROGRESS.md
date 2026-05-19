@@ -3,7 +3,7 @@
 本看板按模块列出所有知识点当前状态。状态语义见 `CONTRIBUTING.md`。
 统计口径：TODO 未动 | DRAFT 已成文 ≥ 80% | REVIEWED 已校验 | DONE 全链接/代码可验证。
 
-**最后更新**：2026-04-23
+**最后更新**：2026-05-19
 
 ---
 
@@ -515,4 +515,8 @@
 - [x] DRAFT — `08-security-incidents/supply-chain-phish/2026-drift-protocol.md` — T1（$285M，Solana，DPRK 社工 + durable nonce）
 - [x] DRAFT — `08-security-incidents/bridge/2026-hyperbridge.md` — T2（$2.5M，自研 MMR 验证库边界漏洞）
 - [x] DRAFT — `08-security-incidents/bridge/2026-kelp-dao.md` — T1（$292M，LayerZero 单 DVN + RPC 投毒 + DDoS）
+- [x] DRAFT — `08-security-incidents/bridge/2026-tac-protocol.md` — T3（$280万零实损，TAC Protocol 桥漏洞白帽，2026-05初）
+- [x] DRAFT — `08-security-incidents/bridge/2026-transit-finance.md` — T3（$188万，跨链聚合协议 Approval Drain，2026-05-13）
+- [x] DRAFT — `08-security-incidents/bridge/2026-verus-ethereum-bridge.md` — T2（$1100万，Verus-ETH 桥验证逻辑漏洞，2026-05-18）
+- [x] DRAFT — `08-security-incidents/governance-admin/2026-echo-protocol.md` — T2（$7670万，Echo Protocol Monad，管理员私钥泄露 + 伪造 eBTC，2026-05-19）
 - [x] DRAFT — `08-security-incidents/misc/2026-ytd-notable-incidents.md` — N/A（2026 Q1–Q2 聚合索引）
